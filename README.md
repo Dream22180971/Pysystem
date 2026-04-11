@@ -1,6 +1,9 @@
 # 智能药店管理系统 (Pysystem)
 
 一个基于SSM框架的智能药店管理系统，提供完整的药品管理、采购、销售、库存管理和统计分析功能。
+<img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/6f85e0ed-6388-4f86-8c93-2524302df8ea" />
+
+<img width="1910" height="886" alt="image" src="https://github.com/user-attachments/assets/3f43bf3b-0baf-4fa7-ad06-f912dee3a3c7" />
 
 ## 项目简介
 
@@ -67,7 +70,6 @@
 - **性能优化**: 数据库查询优化，页面加载快速
 
 ## 快速开始
-<img width="1910" height="886" alt="image" src="https://github.com/user-attachments/assets/685ecaaa-1d40-4ed4-a03a-09c56b49d53d" />
 
 ### 环境要求
 

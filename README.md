@@ -67,6 +67,7 @@
 - **性能优化**: 数据库查询优化，页面加载快速
 
 ## 快速开始
+<img width="1910" height="886" alt="image" src="https://github.com/user-attachments/assets/685ecaaa-1d40-4ed4-a03a-09c56b49d53d" />
 
 ### 环境要求
 

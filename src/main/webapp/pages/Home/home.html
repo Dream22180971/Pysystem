@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>智能药店管理系统 | 后台管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/layui@2.9.8/dist/css/layui.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #001529;
+            color: #fff;
+            transition: all 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+            overflow-y: auto;
+            box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+        }
+
+        .logo-area {
+            padding: 20px 16px;
+            text-align: center;
+            border-bottom: 1px solid #0c2a44;
+            margin-bottom: 20px;
+        }
+
+        .logo-area h2 {
+            color: #fff;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+        }
+
+        .logo-area p {
+            font-size: 12px;
+            color: #90a0b0;
+            margin-top: 6px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 12px;
+        }
+
+        .nav-item {
+            margin-bottom: 6px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #e6e9f0;
+            text-decoration: none;
+            font-size: 15px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .nav-item a i {
+            width: 22px;
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active a, .nav-item a:hover {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            background: #fff;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 9;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #1e2a3a;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info span {
+            color: #2c3e50;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background: #1890ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 20px 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .stat-left h4 {
+            font-size: 14px;
+            color: #8c8f9c;
+            margin-bottom: 12px;
+        }
+
+        .stat-left .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e2a3a;
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            color: #1890ff;
+            opacity: 0.7;
+        }
+
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 24px;
+        }
+
+        .chart-box {
+            flex: 1;
+            min-width: 280px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .chart-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-left: 6px;
+            border-left: 3px solid #1890ff;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+
+        .table-section {
+            margin: 20px 24px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .section-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .warning-tag {
+            background: #ff4d4f;
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            font-weight: 600;
+            color: #4a5568;
+            background-color: #fafafa;
+        }
+
+        .badge {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .action-icons i {
+            margin: 0 6px;
+            cursor: pointer;
+            color: #8592a0;
+        }
+
+        .action-icons i:hover {
+            color: #1890ff;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #8a99aa;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="sidebar">
+        <div class="logo-area">
+            <h2><i class="fas fa-capsules"></i> 智慧药房</h2>
+            <p>智能药店管理系统</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-tab="dashboard"><a href="javascript:void(0);"><i class="fas fa-tachometer-alt"></i> 智能看板</a></li>
+            <li class="nav-item" data-tab="employee"><a href="javascript:void(0);"><i class="fas fa-users"></i> 员工管理</a></li>
+            <li class="nav-item" data-tab="drug"><a href="javascript:void(0);"><i class="fas fa-tablets"></i> 药品管理</a></li>
+            <li class="nav-item" data-tab="category"><a href="javascript:void(0);"><i class="fas fa-tags"></i> 分类管理</a></li>
+            <li class="nav-item" data-tab="sale"><a href="javascript:void(0);"><i class="fas fa-chart-line"></i> 销售管理</a></li>
+            <li class="nav-item" data-tab="inventory"><a href="javascript:void(0);"><i class="fas fa-boxes"></i> 库存管理</a></li>
+            <li class="nav-item" data-tab="purchase"><a href="javascript:void(0);"><i class="fas fa-shopping-cart"></i> 采购管理</a></li>
+            <li class="nav-item" data-tab="stats"><a href="javascript:void(0);"><i class="fas fa-chart-pie"></i> 智能统计</a></li>
+            <li class="nav-item" data-tab="logout"><a href="/pysystem/logout"><i class="fas fa-sign-out-alt"></i> 退出登录</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="top-header">
+            <div class="page-title">管理后台 <span style="font-size: 14px; color:#8a99aa;">| 欢迎回来，管理员</span></div>
+            <div class="user-info">
+                <span><i class="fas fa-bell"></i></span>
+                <span>系统管理员</span>
+                <div class="avatar">AD</div>
+            </div>
+        </div>
+
+        <div id="dynamic-content">
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-left">
+                        <h4>药品总SKU</h4>
+                        <div class="number">186</div>
+                    </div>
+                    <i class="fas fa-pills stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left">
+                        <h4>库存预警药品</h4>
+                        <div class="number" style="color:#ff4d4f;">5</div>
+                    </div>
+                    <i class="fas fa-exclamation-triangle stat-icon" style="color:#ff9c6e;"></i>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left">
+                        <h4>本月销售额</h4>
+                        <div class="number">¥ 45.2k</div>
+                    </div>
+                    <i class="fas fa-yen-sign stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left">
+                        <h4>员工总数</h4>
+                        <div class="number">12</div>
+                    </div>
+                    <i class="fas fa-user-md stat-icon"></i>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3><i class="fas fa-chart-pie"></i> 药品销量比例统计</h3>
+                    <div id="pieChart" class="chart-container"></div>
+                </div>
+                <div class="chart-box">
+                    <h3><i class="fas fa-chart-bar"></i> 近一周采购热榜 (智能推荐)</h3>
+                    <div id="barChart" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-box" style="flex: 1.2;">
+                    <h3><i class="fas fa-database"></i> 库存预警信息 (库存 < 60)</h3>
+                    <table style="width:100%; font-size: 14px;">
+                        <thead>
+                            <tr><th>药品名称</th><th>当前库存</th><th>仓库位置</th><th>预警状态</th></tr>
+                        </thead>
+                        <tbody id="warningTable">
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 12px;"><button class="btn-sm" onclick="alert('跳转补货页面（开发中）')"><i class="fas fa-truck"></i> 前往补货</button></div>
+                </div>
+                <div class="chart-box">
+                    <h3><i class="fas fa-cloud-sun"></i> 智能天气 · 用药推荐</h3>
+                    <div style="background: #f9f9fc; border-radius: 12px; padding: 12px;">
+                        <div id="weatherMock" style="text-align:center;">
+                            <i class="fas fa-cloud-rain" style="font-size: 36px; color:#4aa5ff;"></i>
+                            <div style="font-size: 18px; font-weight: bold; margin: 8px 0;">徐州市 多云转阴</div>
+                            <div>气温 16℃~24℃  |  湿度 68%</div>
+                            <div style="margin-top: 16px; background:#eef2ff; padding: 8px; border-radius: 20px;">
+                                <i class="fas fa-lightbulb"></i> 近期温差大，感冒类药品销量上升，建议补货“感冒灵颗粒”等
+                            </div>
+                            <div style="font-size: 12px; color:#8a8f9c; margin-top: 12px;">数据来源: 和风天气 · 智能分析</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-list-ul"></i> 近期药品管理 (热门药品)</h3>
+                    <button class="btn-sm" onclick="alert('新增药品（演示）')"><i class="fas fa-plus"></i> 新增药品</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="drugTable">
+                        <thead>
+                            <tr><th>药品名称</th><th>分类</th><th>售价(元)</th><th>库存</th><th>状态</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <footer>© 2022-2026 智能药店管理系统</footer>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>
+    $(function() {
+        // 加载库存预警数据
+        loadWarningData();
+        // 加载药品数据
+        loadDrugData();
+        // 初始化图表
+        initCharts();
+    });
+
+    function loadWarningData() {
+        $.ajax({
+            url: '/pysystem/kcxx/getWarningList',
+            type: 'GET',
+            success: function(res) {
+                if (res.code === 200) {
+                    var data = res.data;
+                    var html = '';
+                    if (data.length > 0) {
+                        data.forEach(function(item) {
+                            html += '<tr><td>' + item.drugsName + '</td><td>' + item.num + '</td><td>主仓库</td><td><span class="warning-tag">库存不足</span></td></tr>';
+                        });
+                    } else {
+                        html = '<tr><td colspan="4" style="text-align: center;">暂无预警数据</td></tr>';
+                    }
+                    $('#warningTable').html(html);
+                }
+            }
+        });
+    }
+
+    function loadDrugData() {
+        $.ajax({
+            url: '/pysystem/drugs/list',
+            type: 'GET',
+            success: function(res) {
+                if (res.code === 200) {
+                    var data = res.data;
+                    var html = '';
+                    if (data.length > 0) {
+                        data.forEach(function(item) {
+                            html += '<tr><td>' + item.drugsName + '</td><td>药品分类</td><td>' + item.price + '</td><td>100</td><td><span class="badge">在售</span></td><td class="action-icons"><i class="fas fa-edit" title="编辑"></i> <i class="fas fa-trash-alt" style="color:#ff787f;" title="删除"></i></td></tr>';
+                        });
+                    } else {
+                        html = '<tr><td colspan="6" style="text-align: center;">暂无药品数据</td></tr>';
+                    }
+                    $('#drugTable').html(html);
+                }
+            }
+        });
+    }
+
+    function initCharts() {
+        // 加载销售饼图数据
+        $.ajax({
+            url: '/pysystem/statistic/getSalePie',
+            type: 'GET',
+            success: function(res) {
+                if (res.code === 200) {
+                    var data = res.data;
+                    initPieChart(data);
+                }
+            }
+        });
+
+        // 加载采购柱状图数据
+        $.ajax({
+            url: '/pysystem/statistic/getPurchaseBar',
+            type: 'GET',
+            success: function(res) {
+                if (res.code === 200) {
+                    var data = res.data;
+                    initBarChart(data);
+                }
+            }
+        });
+    }
+
+    function initPieChart(data) {
+        var pieChart = echarts.init(document.getElementById('pieChart'));
+        var pieOption = {
+            tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+            legend: { top: '5%', left: 'left', orient: 'vertical' },
+            series: [{
+                name: '销量占比',
+                type: 'pie',
+                radius: '55%',
+                data: data,
+                emphasis: { scale: true },
+                label: { show: true, formatter: '{b}: {d}%' }
+            }]
+        };
+        pieChart.setOption(pieOption);
+        window.addEventListener('resize', function() {
+            pieChart.resize();
+        });
+    }
+
+    function initBarChart(data) {
+        var barChart = echarts.init(document.getElementById('barChart'));
+        var barOption = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            xAxis: { type: 'category', data: data.map(item => item.name) },
+            yAxis: { type: 'value', name: '采购数量' },
+            series: [{
+                name: '采购量',
+                type: 'bar',
+                data: data.map(item => item.value),
+                itemStyle: { borderRadius: [6,6,0,0], color: '#36a2eb' }
+            }]
+        };
+        barChart.setOption(barOption);
+        window.addEventListener('resize', function() {
+            barChart.resize();
+        });
+    }
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentDiv = document.getElementById('dynamic-content');
+    function setActiveTab(tabId) {
+        navItems.forEach(item => item.classList.remove('active'));
+        document.querySelector(`.nav-item[data-tab="${tabId}"]`).classList.add('active');
+        let html = '';
+        if (tabId === 'dashboard') {
+            location.reload();
+            return;
+        } else if (tabId === 'employee') {
+            html = '<div class="table-section"><div class="section-header"><h3><i class="fas fa-user-friends"></i> 员工信息管理</h3><button class="btn-sm" onclick="alert(\'添加员工(演示)\')">+ 新增员工</button></div><table><thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>性别</th><th>手机号</th><th>角色</th><th>状态</th><th>操作</th></tr></thead><tbody><tr><td>1</td><td>admin</td><td>系统管理员</td><td>男</td><td>138****0000</td><td>管理员</td><td>启用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>2</td><td>zhangwei</td><td>张薇</td><td>女</td><td>158****1234</td><td>员工</td><td>启用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>3</td><td>lina</td><td>李娜</td><td>女</td><td>159****5678</td><td>员工</td><td>禁用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr></tbody></table></div>';
+        } else if (tabId === 'drug') {
+            html = '<div class="table-section"><div class="section-header"><h3><i class="fas fa-capsules"></i> 药品资料库</h3><button class="btn-sm" onclick="alert(\'添加药品\')">+ 添加药品</button></div><table><thead><tr><th>药品编号</th><th>药品名称</th><th>分类</th><th>价格(元)</th><th>库存</th><th>生产日期</th><th>操作</th></tr></thead><tbody><tr><td>1001</td><td>感冒灵颗粒</td><td>感冒用药</td><td>19.8</td><td>45</td><td>2024-01-01</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>1002</td><td>布洛芬缓释胶囊</td><td>解热镇痛</td><td>28.5</td><td>22</td><td>2024-02-10</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>1003</td><td>阿莫西林胶囊</td><td>抗生素</td><td>15.0</td><td>12</td><td>2023-12-11</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr></tbody></table></div>';
+        } else if (tabId === 'category') {
+            html = '<div class="table-section"><h3><i class="fas fa-tags"></i> 药品分类管理</h3><table><thead><tr><th>分类ID</th><th>分类名称</th><th>状态</th><th>操作</th></tr></thead><tbody><tr><td>1</td><td>感冒用药</td><td>启用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>2</td><td>肠胃用药</td><td>启用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr><tr><td>3</td><td>皮肤用药</td><td>启用</td><td class="action-icons"><i class="fas fa-edit"></i><i class="fas fa-trash-alt"></i></td></tr></tbody></table></div>';
+        } else if (tabId === 'sale') {
+            html = '<div class="chart-row"><div class="chart-box" style="width:100%"><h3>近期销售记录</h3><table><thead><tr><th>订单编号</th><th>药品名称</th><th>数量</th><th>总价</th><th>销售日期</th></tr></thead><tbody><tr><td>DD2025001</td><td>感冒灵颗粒</td><td>5</td><td>99.00</td><td>2025-04-10</td></tr><tr><td>DD2025002</td><td>布洛芬胶囊</td><td>2</td><td>57.00</td><td>2025-04-09</td></tr></tbody></table><div style="margin-top:20px;"><div id="miniPie" style="height:260px;"></div></div></div></div>';
+        } else if (tabId === 'inventory') {
+            html = '<div class="table-section"><h3><i class="fas fa-boxes"></i> 库存管理及预警</h3><table><thead><tr><th>药品名称</th><th>当前库存</th><th>仓库位置</th><th>预警状态</th></tr></thead><tbody><tr><td>感冒灵颗粒</td><td>45</td><td>主仓A区</td><td><span class="warning-tag">库存不足</span></td></tr><tr><td>布洛芬缓释胶囊</td><td>22</td><td>主仓B区</td><td><span class="warning-tag">库存不足</span></td></tr><tr><td>健胃消食片</td><td>58</td><td>主仓C区</td><td><span class="warning-tag">接近预警</span></td></tr><tr><td>阿莫西林胶囊</td><td>12</td><td>主仓A区</td><td><span class="warning-tag">严重不足</span></td></tr><tr><td>维生素C片</td><td>30</td><td>主仓B区</td><td><span class="warning-tag">库存不足</span></td></tr></tbody></table><div style="margin-top:16px;">预警阈值可配置(当前<60自动提醒)</div></div>';
+        } else if (tabId === 'purchase') {
+            html = '<div class="table-section"><h3><i class="fas fa-shopping-cart"></i> 采购记录管理</h3><table><thead><tr><th>采购ID</th><th>药品名称</th><th>数量</th><th>采购日期</th><th>仓库</th></tr></thead><tbody><tr><td>PO001</td><td>感冒灵颗粒</td><td>500</td><td>2025-04-01</td><td>主仓库</td></tr><tr><td>PO002</td><td>布洛芬</td><td>300</td><td>2025-04-03</td><td>主仓库</td></tr></tbody></table></div>';
+        } else if (tabId === 'stats') {
+            html = '<div class="chart-row"><div class="chart-box"><h3>智能统计 - 近一周采购热榜</h3><div id="barChart2" style="height:300px;"></div></div><div class="chart-box"><h3>天气预报与上架建议</h3><div style="background:#f2f6fc; padding:20px; border-radius:12px;"><i class="fas fa-cloud-sun"></i> 未来三天晴转多云，推荐清热解毒类药品。<br/>建议采购：板蓝根、连花清瘟等。</div></div></div>';
+        } else {
+            html = '<div style="padding:40px; text-align:center;">功能开发中...</div>';
+        }
+        contentDiv.innerHTML = html;
+        if (tabId === 'sale' && document.getElementById('miniPie')) {
+            var mini = echarts.init(document.getElementById('miniPie'));
+            mini.setOption({ series: [{ type: 'pie', data: [{ name: '感冒灵', value: 45 }, { name: '布洛芬', value: 28 }] }] });
+        }
+        if (tabId === 'stats' && document.getElementById('barChart2')) {
+            var bar2 = echarts.init(document.getElementById('barChart2'));
+            bar2.setOption({ xAxis: { data: ['感冒灵', '头孢', '维C'] }, yAxis: {}, series: [{ type: 'bar', data: [86, 52, 73] }] });
+        }
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            const tab = this.getAttribute('data-tab');
+            if (tab === 'dashboard') {
+                location.reload();
+            } else {
+                setActiveTab(tab);
+            }
+        });
+    });
+</script>
+</body>
+</html>

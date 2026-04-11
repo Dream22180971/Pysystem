@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 库存信息Mapper映射文件 -->
+<mapper namespace="com.pharmacy.mapper.KcxxMapper">
+    <!-- 插入库存信息 -->
+    <insert id="insert" parameterType="com.pharmacy.bean.Kcxx">
+        INSERT INTO kcxx (drugs_name, num, rid, marks)
+        VALUES (#{drugsName}, #{num}, #{rid}, #{marks})
+    </insert>
+
+    <!-- 更新库存信息 -->
+    <update id="update" parameterType="com.pharmacy.bean.Kcxx">
+        UPDATE kcxx
+        SET drugs_name = #{drugsName},
+            num = #{num},
+            rid = #{rid},
+            marks = #{marks}
+        WHERE kid = #{kid}
+    </update>
+
+    <!-- 删除库存信息 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        DELETE FROM kcxx WHERE kid = #{kid}
+    </delete>
+
+    <!-- 根据ID查询库存信息 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Kcxx">
+        SELECT * FROM kcxx WHERE kid = #{kid}
+    </select>
+
+    <!-- 查询所有库存信息 -->
+    <select id="selectAll" resultType="com.pharmacy.bean.Kcxx">
+        SELECT * FROM kcxx
+    </select>
+
+    <!-- 根据仓库ID查询库存信息 -->
+    <select id="selectByRid" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Kcxx">
+        SELECT * FROM kcxx WHERE rid = #{rid}
+    </select>
+
+    <!-- 根据药品名称查询库存信息 -->
+    <select id="selectByDrugsName" parameterType="java.lang.String" resultType="com.pharmacy.bean.Kcxx">
+        SELECT * FROM kcxx WHERE drugs_name = #{drugsName}
+    </select>
+</mapper>

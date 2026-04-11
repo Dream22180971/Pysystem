@@ -1,0 +1,47 @@
+# IDE files
+.idea/
+*.iml
+*.iws
+
+# Build output
+target/
+build/
+*.war
+*.jar
+
+# Log files
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+
+# Environment files
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper
+.mvn/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE specific
+.vscode/
+*.swp
+*.swo
+
+# System files
+*.class
+*.dll
+*.exe
+
+# Test files
+*.test
+*.spec

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 药品销售Mapper映射文件 -->
+<mapper namespace="com.pharmacy.mapper.SaleMapper">
+    <!-- 插入销售记录 -->
+    <insert id="insert" parameterType="com.pharmacy.bean.Sale">
+        INSERT INTO sale (drugs_name, price, num, total, saledate, marks)
+        VALUES (#{drugsName}, #{price}, #{num}, #{total}, #{saledate}, #{marks})
+    </insert>
+
+    <!-- 更新销售记录 -->
+    <update id="update" parameterType="com.pharmacy.bean.Sale">
+        UPDATE sale
+        SET drugs_name = #{drugsName},
+            price = #{price},
+            num = #{num},
+            total = #{total},
+            saledate = #{saledate},
+            marks = #{marks}
+        WHERE sale_id = #{saleId}
+    </update>
+
+    <!-- 删除销售记录 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        DELETE FROM sale WHERE sale_id = #{saleId}
+    </delete>
+
+    <!-- 根据ID查询销售记录 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Sale">
+        SELECT * FROM sale WHERE sale_id = #{saleId}
+    </select>
+
+    <!-- 查询所有销售记录 -->
+    <select id="selectAll" resultType="com.pharmacy.bean.Sale">
+        SELECT * FROM sale
+    </select>
+</mapper>

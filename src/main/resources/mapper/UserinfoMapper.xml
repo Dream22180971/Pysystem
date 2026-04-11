@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 用户信息Mapper映射文件 -->
+<mapper namespace="com.pharmacy.mapper.UserinfoMapper">
+
+    <!-- 显式列名映射，解决数据库列名大小写与Java字段的映射问题 -->
+    <resultMap id="userinfoResultMap" type="com.pharmacy.bean.Userinfo">
+        <id column="Id" property="id"/>
+        <result column="Username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="Nickname" property="nickname"/>
+        <result column="Sex" property="sex"/>
+        <result column="Age" property="age"/>
+        <result column="Phone" property="phone"/>
+        <result column="Address" property="address"/>
+        <result column="P_id" property="pId"/>
+        <result column="Status" property="status"/>
+        <result column="Create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 插入用户信息 -->
+    <insert id="insert" parameterType="com.pharmacy.bean.Userinfo">
+        INSERT INTO userinfo (username, password, nickname, sex, age, phone, address, p_id, status, create_time)
+        VALUES (#{username}, #{password}, #{nickname}, #{sex}, #{age}, #{phone}, #{address}, #{pId}, #{status}, #{createTime})
+    </insert>
+
+    <!-- 更新用户信息 -->
+    <update id="update" parameterType="com.pharmacy.bean.Userinfo">
+        UPDATE userinfo
+        SET username = #{username},
+            password = #{password},
+            nickname = #{nickname},
+            sex = #{sex},
+            age = #{age},
+            phone = #{phone},
+            address = #{address},
+            p_id = #{pId},
+            status = #{status},
+            create_time = #{createTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        DELETE FROM userinfo WHERE id = #{id}
+    </delete>
+
+    <!-- 根据ID查询用户 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="userinfoResultMap">
+        SELECT * FROM userinfo WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="selectByUsername" parameterType="java.lang.String" resultMap="userinfoResultMap">
+        SELECT * FROM userinfo WHERE username = #{username}
+    </select>
+
+    <!-- 查询所有用户 -->
+    <select id="selectAll" resultMap="userinfoResultMap">
+        SELECT * FROM userinfo
+    </select>
+</mapper>

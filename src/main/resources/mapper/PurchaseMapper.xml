@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 药品采购Mapper映射文件 -->
+<mapper namespace="com.pharmacy.mapper.PurchaseMapper">
+    <!-- 插入采购记录 -->
+    <insert id="insert" parameterType="com.pharmacy.bean.Purchase">
+        INSERT INTO purchase (drugs_name, num, indate, rid, marks)
+        VALUES (#{drugsName}, #{num}, #{indate}, #{rid}, #{marks})
+    </insert>
+
+    <!-- 更新采购记录 -->
+    <update id="update" parameterType="com.pharmacy.bean.Purchase">
+        UPDATE purchase
+        SET drugs_name = #{drugsName},
+            num = #{num},
+            indate = #{indate},
+            rid = #{rid},
+            marks = #{marks}
+        WHERE pid = #{pid}
+    </update>
+
+    <!-- 删除采购记录 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        DELETE FROM purchase WHERE pid = #{pid}
+    </delete>
+
+    <!-- 根据ID查询采购记录 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Purchase">
+        SELECT * FROM purchase WHERE pid = #{pid}
+    </select>
+
+    <!-- 查询所有采购记录 -->
+    <select id="selectAll" resultType="com.pharmacy.bean.Purchase">
+        SELECT * FROM purchase
+    </select>
+</mapper>

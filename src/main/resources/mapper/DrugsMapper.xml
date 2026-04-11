@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 药品信息Mapper映射文件 -->
+<mapper namespace="com.pharmacy.mapper.DrugsMapper">
+    <!-- 插入药品信息 -->
+    <insert id="insert" parameterType="com.pharmacy.bean.Drugs">
+        INSERT INTO drugs (drugs_name, nums, drugs_image, category_id, price, people, use_method, cid, rid, product_time, save_time, status)
+        VALUES (#{drugsName}, #{nums}, #{drugsImage}, #{categoryId}, #{price}, #{people}, #{useMethod}, #{cid}, #{rid}, #{productTime}, #{saveTime}, #{status})
+    </insert>
+
+    <!-- 更新药品信息 -->
+    <update id="update" parameterType="com.pharmacy.bean.Drugs">
+        UPDATE drugs
+        SET drugs_name = #{drugsName},
+            nums = #{nums},
+            drugs_image = #{drugsImage},
+            category_id = #{categoryId},
+            price = #{price},
+            people = #{people},
+            use_method = #{useMethod},
+            cid = #{cid},
+            rid = #{rid},
+            product_time = #{productTime},
+            save_time = #{saveTime},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除药品 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        DELETE FROM drugs WHERE id = #{id}
+    </delete>
+
+    <!-- 根据ID查询药品 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Drugs">
+        SELECT * FROM drugs WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有药品 -->
+    <select id="selectAll" resultType="com.pharmacy.bean.Drugs">
+        SELECT * FROM drugs
+    </select>
+
+    <!-- 根据分类ID查询药品 -->
+    <select id="selectByCategoryId" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Drugs">
+        SELECT * FROM drugs WHERE category_id = #{categoryId}
+    </select>
+</mapper>

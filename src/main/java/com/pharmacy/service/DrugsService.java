@@ -1,6 +1,8 @@
 package com.pharmacy.service;
 
 import com.pharmacy.bean.Drugs;
+import com.pharmacy.vo.PageResult;
+
 import java.util.List;
 
 /**
@@ -48,4 +50,8 @@ public interface DrugsService {
      * @return 药品信息列表
      */
     List<Drugs> getByCategoryId(Integer categoryId);
+
+    PageResult<Drugs> getPage(int page, int size);
+
+    PageResult<Drugs> getPage(int page, int size, String sortField, String sortOrder);
 }

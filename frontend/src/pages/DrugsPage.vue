@@ -9,6 +9,11 @@ import * as categoryApi from '../api/category'
 const loading = ref(false)
 const rows = ref<Drugs[]>([])
 const categories = ref<Category[]>([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
+const sortField = ref<'productTime' | 'id'>('id')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 const dialog = ref(false)
 const isEdit = ref(false)
 const form = reactive<Drugs>({
@@ -37,7 +42,7 @@ function resetForm() {
   form.useMethod = '口服'
   form.cid = 1
   form.rid = 1
-  form.productTime = ''
+  form.productTime = new Date().toISOString().slice(0, 10)
   form.saveTime = 24
   form.status = 1
 }
@@ -45,14 +50,46 @@ function resetForm() {
 async function load() {
   loading.value = true
   try {
-    const [d, c] = await Promise.all([drugsApi.listDrugs(), categoryApi.listCategories()])
-    rows.value = d
-    categories.value = c
+    const [d, c] = await Promise.all([
+      drugsApi.listDrugs({
+        page: page.value,
+        size: size.value,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value,
+      }),
+      categoryApi.listCategories({ page: 1, size: 200 }),
+    ])
+    rows.value = d.items
+    total.value = d.total
+    categories.value = c.items
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
     loading.value = false
   }
+}
+
+function handlePageChange(p: number) {
+  page.value = p
+  load()
+}
+
+function handleSizeChange(s: number) {
+  size.value = s
+  page.value = 1
+  load()
+}
+
+function handleSortChange(e: { prop?: string; order?: 'ascending' | 'descending' | null }) {
+  if (!e?.order || !e?.prop) {
+    sortField.value = 'id'
+    sortOrder.value = 'asc'
+  } else {
+    sortField.value = (e.prop === 'productTime' ? 'productTime' : 'id') as 'productTime' | 'id'
+    sortOrder.value = e.order === 'descending' ? 'desc' : 'asc'
+  }
+  page.value = 1
+  load()
 }
 
 function openAdd() {
@@ -111,8 +148,8 @@ onMounted(load)
       </div>
     </template>
 
-    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%">
-      <el-table-column prop="id" label="ID" width="70" />
+    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%" @sort-change="handleSortChange">
+      <el-table-column prop="id" label="ID" width="70" sortable="custom" />
       <el-table-column prop="drugsName" label="药品名称" min-width="120" />
       <el-table-column prop="nums" label="编号" width="90" />
       <el-table-column label="分类" width="110">
@@ -123,7 +160,7 @@ onMounted(load)
       <el-table-column prop="useMethod" label="用法" width="120" show-overflow-tooltip />
       <el-table-column prop="cid" label="柜台" width="70" />
       <el-table-column prop="rid" label="仓库" width="70" />
-      <el-table-column prop="productTime" label="生产日期" width="110" />
+      <el-table-column prop="productTime" label="生产日期" width="110" sortable="custom" />
       <el-table-column prop="saveTime" label="保质期(月)" width="100" />
       <el-table-column label="状态" width="80">
         <template #default="{ row }">{{ row.status === 1 ? '上架' : '下架' }}</template>
@@ -135,6 +172,18 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="pager">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="size"
+        :total="total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <el-dialog v-model="dialog" :title="isEdit ? '编辑药品' : '新增药品'" width="560px" destroy-on-close>
       <el-form label-width="100px">
@@ -168,7 +217,7 @@ onMounted(load)
           <el-input-number v-model="form.rid" :min="1" />
         </el-form-item>
         <el-form-item label="生产日期">
-          <el-input v-model="form.productTime" placeholder="如 2024-01-01" />
+          <el-date-picker v-model="form.productTime" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
         </el-form-item>
         <el-form-item label="保质期(月)">
           <el-input-number v-model="form.saveTime" :min="1" />
@@ -200,5 +249,11 @@ onMounted(load)
 .ttl {
   font-size: 16px;
   font-weight: 600;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

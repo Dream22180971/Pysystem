@@ -1,6 +1,8 @@
 package com.pharmacy.mapper;
 
 import com.pharmacy.bean.Kcxx;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 public interface KcxxMapper {
@@ -11,4 +13,11 @@ public interface KcxxMapper {
     List<Kcxx> selectAll();
     List<Kcxx> selectByRid(Integer rid);
     Kcxx selectByDrugsName(String drugsName);
+
+    long countAll();
+
+    List<Kcxx> selectPage(@Param("offset") int offset,
+                          @Param("limit") int limit,
+                          @Param("sortByNum") boolean sortByNum,
+                          @Param("sortDesc") boolean sortDesc);
 }

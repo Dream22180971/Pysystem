@@ -3,6 +3,7 @@ package com.pharmacy.service.impl;
 import com.pharmacy.bean.Purchase;
 import com.pharmacy.mapper.PurchaseMapper;
 import com.pharmacy.service.PurchaseService;
+import com.pharmacy.vo.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +45,20 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public List<Purchase> getAll() {
         return purchaseMapper.selectAll();
+    }
+
+    @Override
+    public PageResult<Purchase> getPage(int page, int size) {
+        return getPage(page, size, "indate", "asc");
+    }
+
+    @Override
+    public PageResult<Purchase> getPage(int page, int size, String sortField, String sortOrder) {
+        int p = Math.max(1, page);
+        int s = Math.min(200, Math.max(1, size));
+        int offset = (p - 1) * s;
+        long total = purchaseMapper.countAll();
+        List<Purchase> items = purchaseMapper.selectPage(offset, s, sortField, sortOrder);
+        return new PageResult<>(items, total);
     }
 }

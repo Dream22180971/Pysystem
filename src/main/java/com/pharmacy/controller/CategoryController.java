@@ -3,6 +3,7 @@ package com.pharmacy.controller;
 import com.pharmacy.bean.Category;
 import com.pharmacy.service.CategoryService;
 import com.pharmacy.util.ResultJson;
+import com.pharmacy.vo.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +26,14 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/list")
-    public ResultJson list() {
-        List<Category> list = categoryService.getAll();
-        return ResultJson.success(list);
+    public ResultJson list(
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortField", required = false, defaultValue = "categoryId") String sortField,
+            @RequestParam(value = "sortOrder", required = false, defaultValue = "asc") String sortOrder
+    ) {
+        PageResult<Category> result = categoryService.getPage(page, size, sortField, sortOrder);
+        return ResultJson.success(result);
     }
 
     @PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -1,5 +1,5 @@
 import { http } from './http'
-import { unwrap } from './result'
+import { normalizePageResult, unwrap, type PageResult } from './result'
 
 export type Userinfo = {
   id?: number
@@ -15,8 +15,9 @@ export type Userinfo = {
   createTime?: string
 }
 
-export async function listUsers() {
-  return unwrap<Userinfo[]>(http.get('/user/list'))
+export async function listUsers(params?: { page?: number; size?: number; sortField?: string; sortOrder?: 'asc' | 'desc' }) {
+  const data = await unwrap<unknown>(http.get('/user/list', { params }))
+  return normalizePageResult<Userinfo>(data) as PageResult<Userinfo>
 }
 
 export async function addUser(body: Userinfo) {

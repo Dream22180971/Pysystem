@@ -1,6 +1,8 @@
 package com.pharmacy.service;
 
 import com.pharmacy.bean.Purchase;
+import com.pharmacy.vo.PageResult;
+
 import java.util.List;
 
 /**
@@ -41,4 +43,8 @@ public interface PurchaseService {
      * @return 采购信息列表
      */
     List<Purchase> getAll();
+
+    PageResult<Purchase> getPage(int page, int size);
+
+    PageResult<Purchase> getPage(int page, int size, String sortField, String sortOrder);
 }

@@ -1,5 +1,5 @@
 import { http } from './http'
-import { unwrap } from './result'
+import { normalizePageResult, unwrap, type PageResult } from './result'
 
 export type Sale = {
   saleId?: number
@@ -11,8 +11,9 @@ export type Sale = {
   marks?: string
 }
 
-export async function listSales() {
-  return unwrap<Sale[]>(http.get('/sale/list'))
+export async function listSales(params?: { page?: number; size?: number; sortField?: string; sortOrder?: 'asc' | 'desc' }) {
+  const data = await unwrap<unknown>(http.get('/sale/list', { params }))
+  return normalizePageResult<Sale>(data) as PageResult<Sale>
 }
 
 export async function addSale(body: Sale) {

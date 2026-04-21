@@ -36,7 +36,15 @@ public class AuthController {
         }
 
         Userinfo user = userinfoService.getByUsername(req.username());
-        String role = roleFromPid(user == null ? null : user.getpId());
+        if (user == null) {
+            return ResultJson.error(401, "用户名或密码错误（或账号被禁用）");
+        }
+        if (req.expectedPId() != null && user.getpId() != null
+                && !req.expectedPId().equals(user.getpId())) {
+            return ResultJson.error(403, "所选角色与账号不匹配，请使用对应角色账号登录");
+        }
+
+        String role = roleFromPid(user.getpId());
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
@@ -48,11 +56,12 @@ public class AuthController {
         data.put("tokenType", "Bearer");
         data.put("username", req.username());
         data.put("role", role);
+        data.put("pId", user.getpId());
 
         return ResultJson.success(data);
     }
 
-    /** 与库表 part.P_id 约定：1 管理员，2 员工 */
+    /** 与库表 part.P_id 约定：1 管理员，2 员工；其它映射为只读访客角色。 */
     private static String roleFromPid(Integer pid) {
         if (pid == null) {
             return "ROLE_USER";
@@ -66,7 +75,8 @@ public class AuthController {
 
     public record LoginRequest(
             @NotBlank String username,
-            @NotBlank String password
+            @NotBlank String password,
+            Integer expectedPId
     ) {}
 }
 

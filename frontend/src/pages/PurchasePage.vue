@@ -6,6 +6,11 @@ import * as purchaseApi from '../api/purchase'
 
 const loading = ref(false)
 const rows = ref<Purchase[]>([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
+const sortField = ref<'indate' | 'pid'>('indate')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 const dialog = ref(false)
 const isEdit = ref(false)
 const form = reactive<Purchase>({
@@ -28,12 +33,42 @@ function resetForm() {
 async function load() {
   loading.value = true
   try {
-    rows.value = await purchaseApi.listPurchases()
+    const res = await purchaseApi.listPurchases({
+      page: page.value,
+      size: size.value,
+      sortField: sortField.value,
+      sortOrder: sortOrder.value,
+    })
+    rows.value = res.items
+    total.value = res.total
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
     loading.value = false
   }
+}
+
+function handlePageChange(p: number) {
+  page.value = p
+  load()
+}
+
+function handleSizeChange(s: number) {
+  size.value = s
+  page.value = 1
+  load()
+}
+
+function handleSortChange(e: { prop?: string; order?: 'ascending' | 'descending' | null }) {
+  if (!e?.order || !e?.prop) {
+    sortField.value = 'indate'
+    sortOrder.value = 'asc'
+  } else {
+    sortField.value = (e.prop === 'pid' ? 'pid' : 'indate') as 'indate' | 'pid'
+    sortOrder.value = e.order === 'descending' ? 'desc' : 'asc'
+  }
+  page.value = 1
+  load()
 }
 
 function openAdd() {
@@ -83,7 +118,7 @@ async function remove(row: Purchase) {
 }
 
 function fmtDate(v: string | unknown) {
-  if (v == null) return ''
+  if (v == null || String(v).trim() === '') return new Date().toISOString().slice(0, 10)
   const s = String(v)
   return s.length >= 10 ? s.slice(0, 10) : s
 }
@@ -100,11 +135,11 @@ onMounted(load)
       </div>
     </template>
 
-    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%">
-      <el-table-column prop="pid" label="ID" width="70" />
+    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%" @sort-change="handleSortChange">
+      <el-table-column prop="pid" label="ID" width="70" sortable="custom" />
       <el-table-column prop="drugsName" label="药品名称" min-width="120" />
       <el-table-column prop="num" label="采购数量" width="100" />
-      <el-table-column label="进货日期" width="120">
+      <el-table-column prop="indate" label="进货日期" width="120" sortable="custom">
         <template #default="{ row }">{{ fmtDate(row.indate) }}</template>
       </el-table-column>
       <el-table-column prop="rid" label="仓库ID" width="90" />
@@ -116,6 +151,18 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="pager">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="size"
+        :total="total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <el-dialog v-model="dialog" :title="isEdit ? '编辑采购' : '新增采购'" width="500px" destroy-on-close>
       <el-form label-width="88px">
@@ -155,5 +202,11 @@ onMounted(load)
 .ttl {
   font-size: 16px;
   font-weight: 600;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

@@ -6,6 +6,11 @@ import * as categoryApi from '../api/category'
 
 const loading = ref(false)
 const rows = ref<Category[]>([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
+const sortField = ref<'categoryId'>('categoryId')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 const dialog = ref(false)
 const isEdit = ref(false)
 const form = reactive<Category>({ categoryName: '', status: 1 })
@@ -19,12 +24,42 @@ function resetForm() {
 async function load() {
   loading.value = true
   try {
-    rows.value = await categoryApi.listCategories()
+    const res = await categoryApi.listCategories({
+      page: page.value,
+      size: size.value,
+      sortField: sortField.value,
+      sortOrder: sortOrder.value,
+    })
+    rows.value = res.items
+    total.value = res.total
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
     loading.value = false
   }
+}
+
+function handlePageChange(p: number) {
+  page.value = p
+  load()
+}
+
+function handleSizeChange(s: number) {
+  size.value = s
+  page.value = 1
+  load()
+}
+
+function handleSortChange(e: { prop?: string; order?: 'ascending' | 'descending' | null }) {
+  if (!e?.order || !e?.prop) {
+    sortField.value = 'categoryId'
+    sortOrder.value = 'asc'
+  } else {
+    sortField.value = 'categoryId'
+    sortOrder.value = e.order === 'descending' ? 'desc' : 'asc'
+  }
+  page.value = 1
+  load()
 }
 
 function openAdd() {
@@ -78,8 +113,22 @@ onMounted(load)
       </div>
     </template>
 
-    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%">
-      <el-table-column prop="categoryId" label="ID" width="90" />
+    <el-table
+      v-loading="loading"
+      :data="rows"
+      stripe
+      border
+      style="width: 100%"
+      :default-sort="{ prop: 'categoryId', order: 'ascending' }"
+      @sort-change="handleSortChange"
+    >
+      <el-table-column
+        prop="categoryId"
+        label="ID"
+        width="90"
+        sortable="custom"
+        :sort-orders="['ascending', 'descending']"
+      />
       <el-table-column prop="categoryName" label="分类名称" min-width="140" />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">{{ row.status === 1 ? '可用' : '不可用' }}</template>
@@ -91,6 +140,18 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="pager">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="size"
+        :total="total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <el-dialog v-model="dialog" :title="isEdit ? '编辑分类' : '新增分类'" width="420px" destroy-on-close>
       <el-form label-width="88px">
@@ -124,5 +185,11 @@ onMounted(load)
 .ttl {
   font-size: 16px;
   font-weight: 600;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

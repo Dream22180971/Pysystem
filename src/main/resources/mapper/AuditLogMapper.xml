@@ -19,4 +19,35 @@
         FROM audit_log
         ORDER BY id DESC
     </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(1) FROM audit_log
+    </select>
+
+    <select id="selectPageOrderByIdDesc" resultMap="auditLogMap">
+        SELECT id, operator, module, action, detail, ip, created_at
+        FROM audit_log
+        ORDER BY
+        <choose>
+            <when test="sortField == 'createdAt'">
+                created_at
+            </when>
+            <when test="sortField == 'id'">
+                id
+            </when>
+            <otherwise>
+                created_at
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        , id
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 </mapper>

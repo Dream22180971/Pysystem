@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { canAccessRoute } from '../config/rbac'
 
 /** 路由：除 meta.public 外需已登录（Pinia 中 token） */
 export const router = createRouter({
@@ -61,7 +62,7 @@ export const router = createRouter({
           path: 'stats',
           name: 'stats',
           component: () => import('../pages/StatsPage.vue'),
-          meta: { title: '智能统计' },
+          meta: { title: '数据报表' },
         },
         {
           path: 'audit-logs',
@@ -75,9 +76,14 @@ export const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  // 未登录访问受保护路由 → 跳转登录并带上 redirect
   const auth = useAuthStore()
   if (to.meta.public) return true
-  if (auth.isAuthed) return true
-  return { name: 'login', query: { redirect: to.fullPath } }
+  if (!auth.isAuthed) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  const name = to.name
+  if (typeof name === 'string' && !canAccessRoute(auth.role, name)) {
+    return { name: 'dashboard' }
+  }
+  return true
 })

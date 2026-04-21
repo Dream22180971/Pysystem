@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { menuItems } from '../config/rbac'
+import type { Role } from '../stores/auth'
 import {
   Odometer,
   User,
@@ -17,6 +20,24 @@ import {
 
 const router = useRouter()
 const auth = useAuthStore()
+
+const iconMap: Record<string, Component> = {
+  '/': Odometer,
+  '/employees': User,
+  '/drugs': Goods,
+  '/categories': PriceTag,
+  '/sales': TrendCharts,
+  '/inventory': Box,
+  '/purchase': ShoppingCart,
+  '/stats': PieChart,
+  '/audit-logs': Document,
+}
+
+const visibleMenu = computed(() => {
+  const r = auth.role
+  if (!r) return [] as typeof menuItems
+  return menuItems.filter((m) => m.roles.includes(r as Role))
+})
 
 const welcomeSuffix = computed(() => {
   switch (auth.role) {
@@ -55,41 +76,9 @@ async function logout() {
           text-color="rgba(255,255,255,0.72)"
           active-text-color="#ffffff"
         >
-          <el-menu-item index="/">
-            <el-icon><Odometer /></el-icon>
-            <span>智能看板</span>
-          </el-menu-item>
-          <el-menu-item index="/employees">
-            <el-icon><User /></el-icon>
-            <span>员工管理</span>
-          </el-menu-item>
-          <el-menu-item index="/drugs">
-            <el-icon><Goods /></el-icon>
-            <span>药品管理</span>
-          </el-menu-item>
-          <el-menu-item index="/categories">
-            <el-icon><PriceTag /></el-icon>
-            <span>分类管理</span>
-          </el-menu-item>
-          <el-menu-item index="/sales">
-            <el-icon><TrendCharts /></el-icon>
-            <span>销售管理</span>
-          </el-menu-item>
-          <el-menu-item index="/inventory">
-            <el-icon><Box /></el-icon>
-            <span>库存管理</span>
-          </el-menu-item>
-          <el-menu-item index="/purchase">
-            <el-icon><ShoppingCart /></el-icon>
-            <span>采购管理</span>
-          </el-menu-item>
-          <el-menu-item index="/stats">
-            <el-icon><PieChart /></el-icon>
-            <span>智能统计</span>
-          </el-menu-item>
-          <el-menu-item index="/audit-logs">
-            <el-icon><Document /></el-icon>
-            <span>日志审计</span>
+          <el-menu-item v-for="item in visibleMenu" :key="item.path" :index="item.path">
+            <el-icon><component :is="iconMap[item.path] ?? Odometer" /></el-icon>
+            <span>{{ item.title }}</span>
           </el-menu-item>
         </el-menu>
 

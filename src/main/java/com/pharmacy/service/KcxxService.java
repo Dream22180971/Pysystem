@@ -1,6 +1,8 @@
 package com.pharmacy.service;
 
 import com.pharmacy.bean.Kcxx;
+import com.pharmacy.vo.PageResult;
+
 import java.util.List;
 
 /**
@@ -61,4 +63,8 @@ public interface KcxxService {
      * @return 库存预警列表
      */
     List<Kcxx> getWarningList();
+
+    PageResult<Kcxx> getPage(int page, int size);
+
+    PageResult<Kcxx> getPage(int page, int size, String sortField, String sortOrder);
 }

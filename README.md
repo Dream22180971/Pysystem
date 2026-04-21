@@ -1,10 +1,12 @@
 # 智能药店管理系统 (Pysystem)
 
-基于 **Spring Boot 3** 与 **Vue 3** 前后端分离的智能药店后台：员工、药品、分类、采购、销售、库存、统计与日志审计等模块，统一 REST API（`/api`）与 JWT 鉴权。
+**当前版本：v1.1.0**（Maven `pysystem` / 前端 `package.json` 已对齐）
+
+基于 **Spring Boot 3** 与 **Vue 3** 前后端分离的智能药店后台：员工、药品、分类、采购、销售、库存、统计与日志审计等模块，统一 REST API（`/api`）与 JWT 鉴权；支持 **RBAC**（管理员 / 员工）与分页列表服务端排序。
 
 ## 项目简介
 
-系统采用 B/S 架构，支持管理员与员工角色；前端为单页应用（Vite），后端为内嵌 Tomcat 的 Spring Boot 应用，数据存储于 MySQL。
+系统采用 B/S 架构，支持 **管理员** 与 **员工** 两种业务角色（由 `userinfo.P_id` 与 JWT `role` 声明）；前端为单页应用（Vite），后端为内嵌 Tomcat 的 Spring Boot 应用，数据存储于 MySQL。
 
 ## 技术栈
 
@@ -40,7 +42,8 @@
 
 | 模块 | 说明 |
 |------|------|
-| 登录 | `POST /api/auth/login`，返回 JWT |
+| 登录 | `POST /api/auth/login`，返回 JWT；可选 `expectedPId` 与账号角色一致校验 |
+| 权限 | Spring Security：用户/审计仅管理员；销售/采购查询与业务写操作限管理员+员工；前端路由与菜单按角色收敛 |
 | 智能看板 | 汇总 SKU、库存预警、本月销售、图表（销售/采购聚合） |
 | 员工管理 | 用户 CRUD（密码 MD5；列表不返回密码字段） |
 | 药品 / 分类 | 药品与分类维护 |
@@ -137,6 +140,7 @@ pysystem/
 ├── frontend/                      # Vue3 前端工程
 │   ├── src/
 │   │   ├── api/                   # Axios 与各模块接口
+│   │   ├── config/                # RBAC 路由与菜单角色配置
 │   │   ├── pages/                 # 页面（看板、各业务、登录）
 │   │   ├── layouts/               # 后台布局
 │   │   ├── stores/                # Pinia（登录态）
@@ -181,18 +185,39 @@ pysystem/
 - 修改 JWT 密钥、数据库密码后勿提交真实凭据到公开仓库  
 - 论文/设计说明见仓库上级目录 `智能药店管理系统的设计.md`（技术栈已与当前实现对齐）  
 
+## 安全说明（审查摘要）
+
+| 项 | 说明 |
+|----|------|
+| 认证 | 无状态 JWT（HS256）；匿名仅 `POST /api/auth/login`（及 OPTIONS 预检、健康检查等），其余需 `Authorization: Bearer` |
+| 授权 | URL 级 RBAC：`ROLE_ADMIN` / `ROLE_EMP`；403 返回统一 JSON |
+| 注入 | MyBatis 使用 `#{}` 参数化；分页排序在 Service 层规范为布尔/白名单字段，避免动态 SQL 拼接用户输入 |
+| CORS | 默认 `http://localhost:*`，生产请改为实际域名并通过环境变量配置 |
+| 密钥 | `APP_JWT_SECRET` 生产环境必须替换；`application.yml` 中示例密钥勿用于线上 |
+| 前端 | Token 存 `localStorage`，需防范 XSS；生产建议 HTTPS + 合理 CSP |
+
+密码当前为 **MD5** 存储（与历史库表一致）；新系统若升级可考虑迁移为 **BCrypt** 等慢哈希。
+
+## 代码与注释审查摘要
+
+- **后端**：Controller / Service / Mapper 分层清晰；关键安全与排序逻辑集中在 `SecurityConfig`、`*ServiceImpl` 与 Mapper XML。  
+- **前端**：列表页统一走服务端分页与 `sortField`/`sortOrder`；路由 `beforeEach` 与 `config/rbac.ts` 避免无权限页面误开。  
+- **注释**：Java 类与 `SecurityConfig`、JWT 相关类保留中文说明；不宜在仓库中保留已失效业务角色（如已移除的扩展角色）的残留文档。  
+
 ## 许可证
 
 本项目采用 MIT 许可证（若仓库内无 `LICENSE` 文件，请自行补充）。
 
 ## 更新日志
 
-### 当前版本（与仓库实现一致）
+### v1.1.0（当前）
 
-- **后端**：Spring Boot 3 + Spring Security + JWT + MyBatis + MySQL  
-- **前端**：Vue 3 + Vite + Element Plus + Pinia + ECharts  
-- 前后端分离、REST API、智能看板与各业务 CRUD、库存预警、审计日志查询  
+- **RBAC**：管理员全量；员工可操作药品/分类/销售/采购/库存等业务接口，**不可**访问 `/api/user/**`、审计日志；Spring Security + 前端路由/侧栏一致。  
+- **登录页**：双栏布局 + 快速选择角色（`expectedPId`）；登录响应携带 `pId`。  
+- **列表排序**：分类、库存等多处列表支持服务端按 ID/字段排序（`sortField` / `sortOrder`）；分类/库存 Mapper 使用布尔参数控制排序方向，避免 OGNL 字符串比较歧义。  
+- **报表**：销售/采购聚合等（若仓库已包含 `ReportController` / `ReportMapper`）与看板联动。  
+- **其它**：JWT 401/403 JSON 与 UTF-8；员工用户创建时间等历史问题已在前序迭代中修复（以代码为准）。
 
-### 历史
+### v1.0.x / 早期
 
-- **v1.0.0**：早期 SSM + Layui 版本（已迁移，README 以当前栈为准）
+- **v1.0.0**：早期 SSM + Layui 版本（已迁移，README 以当前栈为准）。

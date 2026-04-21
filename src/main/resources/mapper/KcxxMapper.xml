@@ -35,6 +35,27 @@
         SELECT * FROM kcxx
     </select>
 
+    <select id="countAll" resultType="long">
+        SELECT COUNT(1) FROM kcxx
+    </select>
+
+    <select id="selectPage" resultType="com.pharmacy.bean.Kcxx">
+        SELECT * FROM kcxx
+        ORDER BY
+        <choose>
+            <when test="sortByNum"> num</when>
+            <otherwise> kid</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDesc"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        <if test="sortByNum">
+            , kid ASC
+        </if>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <!-- 根据仓库ID查询库存信息 -->
     <select id="selectByRid" parameterType="java.lang.Integer" resultType="com.pharmacy.bean.Kcxx">
         SELECT * FROM kcxx WHERE rid = #{rid}

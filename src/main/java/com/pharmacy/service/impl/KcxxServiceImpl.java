@@ -3,6 +3,7 @@ package com.pharmacy.service.impl;
 import com.pharmacy.bean.Kcxx;
 import com.pharmacy.mapper.KcxxMapper;
 import com.pharmacy.service.KcxxService;
+import com.pharmacy.vo.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,5 +71,22 @@ public class KcxxServiceImpl implements KcxxService {
             }
         }
         return warningList;
+    }
+
+    @Override
+    public PageResult<Kcxx> getPage(int page, int size) {
+        return getPage(page, size, "kid", "asc");
+    }
+
+    @Override
+    public PageResult<Kcxx> getPage(int page, int size, String sortField, String sortOrder) {
+        int p = Math.max(1, page);
+        int s = Math.min(200, Math.max(1, size));
+        int offset = (p - 1) * s;
+        long total = kcxxMapper.countAll();
+        boolean sortByNum = sortField != null && "num".equalsIgnoreCase(sortField.trim());
+        boolean sortDesc = sortOrder != null && "desc".equalsIgnoreCase(sortOrder.trim());
+        List<Kcxx> items = kcxxMapper.selectPage(offset, s, sortByNum, sortDesc);
+        return new PageResult<>(items, total);
     }
 }

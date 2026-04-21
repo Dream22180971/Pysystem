@@ -1,5 +1,5 @@
 import { http } from './http'
-import { unwrap } from './result'
+import { normalizePageResult, unwrap, type PageResult } from './result'
 
 export type Kcxx = {
   kid?: number
@@ -9,8 +9,14 @@ export type Kcxx = {
   marks?: string
 }
 
-export async function listKcxx() {
-  return unwrap<Kcxx[]>(http.get('/kcxx/list'))
+export async function listKcxx(params?: {
+  page?: number
+  size?: number
+  sortField?: string
+  sortOrder?: 'asc' | 'desc'
+}) {
+  const data = await unwrap<unknown>(http.get('/kcxx/list', { params }))
+  return normalizePageResult<Kcxx>(data) as PageResult<Kcxx>
 }
 
 export async function listWarning() {

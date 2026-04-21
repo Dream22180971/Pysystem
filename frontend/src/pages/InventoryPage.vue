@@ -6,6 +6,11 @@ import * as kcxxApi from '../api/kcxx'
 
 const loading = ref(false)
 const rows = ref<Kcxx[]>([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
+const sortField = ref<'kid' | 'num'>('kid')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 const dialog = ref(false)
 const isEdit = ref(false)
 const form = reactive<Kcxx>({
@@ -26,12 +31,49 @@ function resetForm() {
 async function load() {
   loading.value = true
   try {
-    rows.value = await kcxxApi.listKcxx()
+    const res = await kcxxApi.listKcxx({
+      page: page.value,
+      size: size.value,
+      sortField: sortField.value,
+      sortOrder: sortOrder.value,
+    })
+
+    rows.value = res.items
+    total.value = res.total
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
     loading.value = false
   }
+}
+
+function formatNum(v: unknown) {
+  const n = typeof v === 'number' ? v : Number(v)
+  if (!Number.isFinite(n)) return '-'
+  return Math.trunc(n).toLocaleString()
+}
+
+function handlePageChange(p: number) {
+  page.value = p
+  load()
+}
+
+function handleSizeChange(s: number) {
+  size.value = s
+  page.value = 1
+  load()
+}
+
+function handleSortChange(e: { prop?: string; order?: 'ascending' | 'descending' | null }) {
+  if (!e?.order || !e?.prop) {
+    sortField.value = 'kid'
+    sortOrder.value = 'asc'
+  } else {
+    sortField.value = e.prop === 'num' ? 'num' : 'kid'
+    sortOrder.value = e.order === 'descending' ? 'desc' : 'asc'
+  }
+  page.value = 1
+  load()
 }
 
 function openAdd() {
@@ -85,10 +127,34 @@ onMounted(load)
       </div>
     </template>
 
-    <el-table v-loading="loading" :data="rows" stripe border style="width: 100%">
-      <el-table-column prop="kid" label="ID" width="70" />
+    <el-table
+      v-loading="loading"
+      :data="rows"
+      stripe
+      border
+      style="width: 100%"
+      :default-sort="{ prop: 'kid', order: 'ascending' }"
+      @sort-change="handleSortChange"
+    >
+      <el-table-column
+        prop="kid"
+        label="ID"
+        width="70"
+        sortable="custom"
+        :sort-orders="['ascending', 'descending']"
+      />
       <el-table-column prop="drugsName" label="药品名称" min-width="140" />
-      <el-table-column prop="num" label="库存数量" width="100" />
+      <el-table-column
+        prop="num"
+        label="库存数量"
+        width="110"
+        sortable="custom"
+        :sort-orders="['ascending', 'descending']"
+        align="right"
+        header-align="center"
+      >
+        <template #default="{ row }">{{ formatNum(row.num) }}</template>
+      </el-table-column>
       <el-table-column prop="rid" label="仓库ID" width="90" />
       <el-table-column prop="marks" label="备注" min-width="160" show-overflow-tooltip />
       <el-table-column label="操作" width="160" fixed="right">
@@ -98,6 +164,18 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
+
+    <div class="pager">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="size"
+        :total="total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <el-dialog v-model="dialog" :title="isEdit ? '编辑库存' : '新增库存'" width="480px" destroy-on-close>
       <el-form label-width="88px">
@@ -134,5 +212,11 @@ onMounted(load)
 .ttl {
   font-size: 16px;
   font-weight: 600;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

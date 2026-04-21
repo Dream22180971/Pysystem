@@ -1,5 +1,5 @@
 import { http } from './http'
-import { unwrap } from './result'
+import { normalizePageResult, unwrap, type PageResult } from './result'
 
 export type Purchase = {
   pid?: number
@@ -10,8 +10,9 @@ export type Purchase = {
   marks?: string
 }
 
-export async function listPurchases() {
-  return unwrap<Purchase[]>(http.get('/purchase/list'))
+export async function listPurchases(params?: { page?: number; size?: number; sortField?: string; sortOrder?: 'asc' | 'desc' }) {
+  const data = await unwrap<unknown>(http.get('/purchase/list', { params }))
+  return normalizePageResult<Purchase>(data) as PageResult<Purchase>
 }
 
 export async function addPurchase(body: Purchase) {

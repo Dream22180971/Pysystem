@@ -1,5 +1,5 @@
 import { http } from './http'
-import { unwrap } from './result'
+import { normalizePageResult, unwrap, type PageResult } from './result'
 
 export type Category = {
   categoryId?: number
@@ -7,8 +7,14 @@ export type Category = {
   status: number
 }
 
-export async function listCategories() {
-  return unwrap<Category[]>(http.get('/category/list'))
+export async function listCategories(params?: {
+  page?: number
+  size?: number
+  sortField?: string
+  sortOrder?: 'asc' | 'desc'
+}) {
+  const data = await unwrap<unknown>(http.get('/category/list', { params }))
+  return normalizePageResult<Category>(data) as PageResult<Category>
 }
 
 export async function addCategory(body: Category) {

@@ -3,6 +3,7 @@ package com.pharmacy.controller;
 import com.pharmacy.bean.Userinfo;
 import com.pharmacy.service.UserinfoService;
 import com.pharmacy.util.ResultJson;
+import com.pharmacy.vo.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +26,14 @@ public class UserController {
     private UserinfoService userinfoService;
 
     @GetMapping("/list")
-    public ResultJson list() {
-        List<Userinfo> list = userinfoService.getAll();
-        return ResultJson.success(list);
+    public ResultJson list(
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortField", required = false, defaultValue = "createTime") String sortField,
+            @RequestParam(value = "sortOrder", required = false, defaultValue = "asc") String sortOrder
+    ) {
+        PageResult<Userinfo> result = userinfoService.getPage(page, size, sortField, sortOrder);
+        return ResultJson.success(result);
     }
 
     @PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE)

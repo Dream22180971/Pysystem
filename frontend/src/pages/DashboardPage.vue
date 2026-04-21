@@ -15,8 +15,7 @@ import { WarningFilled, Coin, GoodsFilled } from '@element-plus/icons-vue'
 import * as drugsApi from '../api/drugs'
 import type { Kcxx } from '../api/kcxx'
 import * as kcxxApi from '../api/kcxx'
-import * as saleApi from '../api/sale'
-import * as statisticApi from '../api/statistic'
+import * as reportApi from '../api/report'
 
 use([
   CanvasRenderer,
@@ -85,38 +84,34 @@ const barOption = ref<Record<string, unknown>>({
 async function load() {
   loading.value = true
   try {
-    const [drugs, warn, sales, pie, bar] = await Promise.all([
-      drugsApi.listDrugs(),
+    const [drugs, warn, pie, bar] = await Promise.all([
+      drugsApi.listDrugs({ page: 1, size: 1 }),
       kcxxApi.listWarning(),
-      saleApi.listSales(),
-      statisticApi.getSalePie(),
-      statisticApi.getPurchaseBar(),
+      reportApi.salesByDrug({ limit: 12 }),
+      reportApi.purchaseByDrug({ limit: 12 }),
     ])
-    statSku.value = drugs.length
+    statSku.value = drugs.total
     statWarn.value = warn.length
     warnRows.value = warn
 
     const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+    const end = now.toISOString().slice(0, 10)
+    const dayAgg = await reportApi.salesByDay({ start, end })
     let sum = 0
-    for (const s of sales) {
-      const raw = s.saledate as string | number | Date
-      const d = raw instanceof Date ? raw : new Date(typeof raw === 'string' ? raw : Number(raw))
-      if (!Number.isNaN(d.getTime()) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
-        sum += parseFloat(String(s.total)) || 0
-      }
-    }
+    for (const d of dayAgg) sum += Number(d.amount || 0)
     statSales.value = sum >= 1000 ? `¥ ${(sum / 1000).toFixed(1)}k` : `¥ ${sum.toFixed(2)}`
 
     const pieData = pie.map((p, i) => ({
-      value: p.value,
-      name: p.name,
+      value: p.qty,
+      name: p.drugsName,
       itemStyle: { color: COLORS[i % COLORS.length] },
     }))
     const s0 = pieOption.value.series as Record<string, unknown>[]
     if (s0[0]) s0[0].data = pieData
 
-    const names = bar.map((b) => b.name)
-    const vals = bar.map((b) => b.value)
+    const names = bar.map((b) => b.drugsName)
+    const vals = bar.map((b) => b.qty)
     const x = barOption.value.xAxis as Record<string, unknown>
     x.data = names
     const maxV = Math.max(10, ...vals)

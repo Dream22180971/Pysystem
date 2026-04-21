@@ -42,3 +42,24 @@ http.interceptors.request.use((config) => {
   return config
 })
 
+http.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    // 后端返回 401：通常是 token 过期/后端密钥变更/本地残留无效 token
+    const status = error?.response?.status as number | undefined
+    if (status === 401) {
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY)
+      } catch {
+        // ignore
+      }
+      // 避免循环跳转
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        const redirect = window.location.pathname + window.location.search
+        window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+

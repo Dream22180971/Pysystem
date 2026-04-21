@@ -45,3 +45,7 @@ Thumbs.db
 # Test files
 *.test
 *.spec
+
+# Frontend (Vite / npm)
+frontend/node_modules/
+frontend/dist/

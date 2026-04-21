@@ -6,9 +6,7 @@ package com.pharmacy.util;
  */
 public class ResultJson {
     /**
-     * 状态码
-     * 200: 成功
-     * 500: 失败
+     * 状态码：200 成功；4xx/5xx 表示失败（如登录错误可能为 401，业务错误多为 500）
      */
     private int code;
     /**

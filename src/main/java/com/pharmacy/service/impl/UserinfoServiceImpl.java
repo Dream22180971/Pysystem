@@ -7,32 +7,34 @@ import com.pharmacy.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
-/**
- * 用户服务实现类
- * 实现用户相关的业务逻辑
- */
+/** 用户业务：密码入库前 MD5；更新时若未传新密码则保留库中原哈希 */
 @Service
 public class UserinfoServiceImpl implements UserinfoService {
 
-    /**
-     * 用户Mapper，用于数据库操作
-     */
     @Autowired
     private UserinfoMapper userinfoMapper;
 
     @Override
     public int add(Userinfo userinfo) {
-        // 对密码进行MD5加密
         userinfo.setPassword(MD5Util.encrypt(userinfo.getPassword()));
+        if (userinfo.getCreateTime() == null) {
+            userinfo.setCreateTime(new Date());
+        }
         return userinfoMapper.insert(userinfo);
     }
 
     @Override
     public int update(Userinfo userinfo) {
-        // 如果密码不为空，则进行MD5加密
-        if (userinfo.getPassword() != null && !userinfo.getPassword().isEmpty()) {
+        // 前端编辑常省略密码字段：空则沿用库中密文，避免被写成 null
+        if (userinfo.getPassword() == null || userinfo.getPassword().isEmpty()) {
+            Userinfo existing = userinfoMapper.selectById(userinfo.getId());
+            if (existing != null) {
+                userinfo.setPassword(existing.getPassword());
+            }
+        } else {
             userinfo.setPassword(MD5Util.encrypt(userinfo.getPassword()));
         }
         return userinfoMapper.update(userinfo);

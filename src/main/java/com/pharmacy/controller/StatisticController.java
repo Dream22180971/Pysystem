@@ -1,71 +1,77 @@
 package com.pharmacy.controller;
 
-import com.pharmacy.service.SaleService;
+import com.pharmacy.bean.Purchase;
+import com.pharmacy.bean.Sale;
 import com.pharmacy.service.PurchaseService;
+import com.pharmacy.service.SaleService;
+import com.pharmacy.util.ResultJson;
 import com.pharmacy.vo.BarVO;
 import com.pharmacy.vo.PieVO;
-import com.pharmacy.util.ResultJson;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * 统计数据控制器
- * 提供销售和采购的统计数据，用于前端图表展示
+ * 统计图表数据：按药品名称汇总数量。销售→饼图，采购→柱状图（取前 12 名，避免项过多）。
  */
-@Controller
-@RequestMapping("/statistic")
+@RestController
+@RequestMapping("/api/statistic")
 public class StatisticController {
 
-    /**
-     * 销售服务，用于获取销售数据
-     */
     @Autowired
     private SaleService saleService;
 
-    /**
-     * 采购服务，用于获取采购数据
-     */
     @Autowired
     private PurchaseService purchaseService;
 
-    /**
-     * 获取销售数据饼图
-     * @return 销售数据列表
-     */
-    @RequestMapping(value = "/getSalePie", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping("/getSalePie")
     public ResultJson getSalePie() {
-        // 模拟销售数据
-        List<PieVO> list = new ArrayList<>();
-        list.add(new PieVO("感冒灵颗粒", 342));
-        list.add(new PieVO("阿莫西林", 210));
-        list.add(new PieVO("布洛芬", 189));
-        list.add(new PieVO("健胃消食片", 276));
-        list.add(new PieVO("其他", 410));
+        List<Sale> sales = saleService.getAll();
+        Map<String, Integer> sum = new HashMap<>();
+        for (Sale s : sales) {
+            if (s.getDrugsName() == null) {
+                continue;
+            }
+            sum.merge(s.getDrugsName(), s.getNum() == null ? 0 : s.getNum(), Integer::sum);
+        }
+        List<PieVO> list = sum.entrySet().stream()
+                .map(e -> new PieVO(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparingInt(PieVO::getValue).reversed())
+                .collect(Collectors.toList());
+        if (list.isEmpty()) {
+            list.add(new PieVO("暂无销售数据", 1));
+        }
         return ResultJson.success(list);
     }
 
-    /**
-     * 获取采购数据柱状图
-     * @return 采购数据列表
-     */
-    @RequestMapping(value = "/getPurchaseBar", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping("/getPurchaseBar")
     public ResultJson getPurchaseBar() {
-        // 模拟采购数据
+        List<Purchase> purchases = purchaseService.getAll();
+        Map<String, Integer> sum = new HashMap<>();
+        for (Purchase p : purchases) {
+            if (p.getDrugsName() == null) {
+                continue;
+            }
+            sum.merge(p.getDrugsName(), p.getNum() == null ? 0 : p.getNum(), Integer::sum);
+        }
+        List<Map.Entry<String, Integer>> entries = new ArrayList<>(sum.entrySet());
+        entries.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
         List<BarVO> list = new ArrayList<>();
-        list.add(new BarVO("板蓝根", 320));
-        list.add(new BarVO("感冒灵", 480));
-        list.add(new BarVO("布洛芬", 290));
-        list.add(new BarVO("头孢克肟", 160));
-        list.add(new BarVO("维生素C", 410));
-        list.add(new BarVO("退热贴", 235));
+        for (int i = 0; i < Math.min(12, entries.size()); i++) {
+            Map.Entry<String, Integer> e = entries.get(i);
+            list.add(new BarVO(e.getKey(), e.getValue()));
+        }
+        if (list.isEmpty()) {
+            list.add(new BarVO("暂无采购数据", 0));
+        }
         return ResultJson.success(list);
     }
 }

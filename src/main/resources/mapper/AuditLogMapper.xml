@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pharmacy.mapper.AuditLogMapper">
+
+    <resultMap id="auditLogMap" type="com.pharmacy.bean.AuditLog">
+        <id column="id" property="id"/>
+        <result column="operator" property="operator"/>
+        <result column="module" property="module"/>
+        <result column="action" property="action"/>
+        <result column="detail" property="detail"/>
+        <result column="ip" property="ip"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectAllOrderByIdDesc" resultMap="auditLogMap">
+        SELECT id, operator, module, action, detail, ip, created_at
+        FROM audit_log
+        ORDER BY id DESC
+    </select>
+</mapper>

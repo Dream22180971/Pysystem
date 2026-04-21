@@ -441,7 +441,7 @@
 
             form.on('submit(login)', function(data) {
                 $.ajax({
-                    url: '/pysystem/login',
+                    url: '/api/auth/login',
                     type: 'POST',
                     data: data.field,
                     contentType: 'application/x-www-form-urlencoded;charset=utf-8',
@@ -449,7 +449,7 @@
                     success: function(res) {
                         if (res.code === 200) {
                             layer.msg(res.message, {icon: 1}, function() {
-                                window.location.href = '/pysystem/pages/Home/home.html';
+                                window.location.href = '/pages/Home/home.html';
                             });
                         } else {
                             layer.msg(res.message, {icon: 5});

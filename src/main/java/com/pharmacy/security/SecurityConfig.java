@@ -48,6 +48,10 @@ public class SecurityConfig {
                         // 仅管理员：审计日志、用户（员工）管理
                         .requestMatchers("/api/audit/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasRole("ADMIN")
+                        // 知识库：读取/检索需登录；重建索引仅管理员
+                        .requestMatchers(HttpMethod.POST, "/api/kb/resync").hasRole("ADMIN")
+                        // 药智助手：需登录（内部助手）
+                        .requestMatchers(HttpMethod.POST, "/api/ai/chat").authenticated()
                         // 销售/采购数据仅管理员与员工可读
                         .requestMatchers(HttpMethod.GET, "/api/sale/**", "/api/purchase/**")
                         .hasAnyRole("ADMIN", "EMP")

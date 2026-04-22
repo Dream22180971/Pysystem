@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import { computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { menuItems } from '../config/rbac'
 import type { Role } from '../stores/auth'
+import AiAssistantDrawer from '../components/AiAssistantDrawer.vue'
 import {
   Odometer,
   User,
@@ -16,10 +18,12 @@ import {
   PieChart,
   Document,
   SwitchButton,
+  ChatDotRound,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const aiOpen = ref(false)
 
 const iconMap: Record<string, Component> = {
   '/': Odometer,
@@ -102,6 +106,11 @@ async function logout() {
       </el-main>
     </el-container>
   </el-container>
+
+  <el-button class="ai-fab" type="primary" circle @click="aiOpen = true" title="药智助手">
+    <el-icon><ChatDotRound /></el-icon>
+  </el-button>
+  <AiAssistantDrawer v-model="aiOpen" />
 </template>
 
 <style scoped>
@@ -231,5 +240,15 @@ async function logout() {
 .layout-main {
   padding: 20px 24px 28px;
   box-sizing: border-box;
+}
+
+.ai-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 22px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 10px 22px rgba(24, 144, 255, 0.28);
 }
 </style>

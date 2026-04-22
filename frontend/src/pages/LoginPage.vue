@@ -9,8 +9,8 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
-const username = ref('admin')
-const password = ref('admin123')
+const username = ref('')
+const password = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
 
@@ -135,7 +135,9 @@ async function submit() {
 
 
 
-        <p class="foot-hint">默认管理员：admin / admin123 · 员工账号：emp01 / employee123</p>
+        <p class="foot-hint">
+          提示：开发环境可使用种子账号登录（账号信息见后端 `README.md` / `pharmacy_system.sql`）。
+        </p>
 
       </section>
 

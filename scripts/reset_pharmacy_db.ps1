@@ -1,13 +1,13 @@
 # 重建 pharmacy_system 并导入种子数据（会删除原库）
 # 用法: .\scripts\reset_pharmacy_db.ps1
-# 默认账号 root / admin123，可在环境变量中覆盖 MYSQL_USER MYSQL_PWD
+# 默认使用环境变量 MYSQL_USER / MYSQL_PWD；不在仓库内写死数据库密码
 
 $ErrorActionPreference = 'Stop'
 # 脚本位于 <项目根>/scripts/，资源在 <项目根>/src/main/resources/
 $projRoot = Split-Path -Parent $PSScriptRoot
 $sqlDir = Join-Path $projRoot 'src\main\resources'
 $user = if ($env:MYSQL_USER) { $env:MYSQL_USER } else { 'root' }
-$pwd = if ($env:MYSQL_PWD) { $env:MYSQL_PWD } else { 'admin123' }
+$pwd = if ($env:MYSQL_PWD) { $env:MYSQL_PWD } else { (Read-Host -Prompt 'MySQL password') }
 
 Write-Host "Dropping and creating database pharmacy_system..."
 & mysql -u $user -p$pwd --default-character-set=utf8mb4 -e "DROP DATABASE IF EXISTS pharmacy_system; CREATE DATABASE pharmacy_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"

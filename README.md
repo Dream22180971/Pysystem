@@ -1,6 +1,6 @@
 # 智能药店管理系统 (Pysystem)
 
-**当前版本：v1.1.0**（Maven `pysystem` / 前端 `package.json` 已对齐）
+**当前版本：v2.0（开发分支）**：新增本地知识库（Markdown）与“药智助手”（RAG + 可选阿里大模型）。
 
 基于 **Spring Boot 3** 与 **Vue 3** 前后端分离的智能药店后台：员工、药品、分类、采购、销售、库存、统计与日志审计等模块，统一 REST API（`/api`）与 JWT 鉴权；支持 **RBAC**（管理员 / 员工）与分页列表服务端排序。
 
@@ -51,6 +51,8 @@
 | 库存 | 库存维护；预警（数量 &lt; 60） |
 | 智能统计 | 销售结构饼图、采购分布柱状图（数据来自 `sale` / `purchase` 表聚合） |
 | 日志审计 | 读 `audit_log` 表（需执行 `audit_log.sql`） |
+| 本地知识库 | 扫描项目 `kb/` 目录下的 Markdown，提供检索/读取接口（`/api/kb/**`） |
+| 药智助手 | 内部流程/系统使用问答：知识库检索 +（可选）阿里模型生成（`/api/ai/chat`） |
 
 ## 环境要求
 
@@ -80,9 +82,22 @@ Windows 也可使用仓库内脚本（会 **删除并重建** `pharmacy_system` 
 
 主要配置见 `src/main/resources/application.yml`：
 
-- 数据源：默认 `jdbc:mysql://localhost:3306/pharmacy_system`，用户 `root`，密码可通过环境变量 `DB_PASSWORD` 覆盖  
+- 数据源：默认 `jdbc:mysql://localhost:3306/pharmacy_system`，用户 `root`，**密码必须通过环境变量 `DB_PASSWORD` 配置**  
 - JWT：密钥 `APP_JWT_SECRET`（生产环境务必修改，长度满足 HS256 要求）  
 - CORS：`app.cors.allowed-origin-patterns` 默认允许 `http://localhost:*`  
+- 知识库目录：`KB_PATH`（默认 `kb`）  
+- 阿里模型（可选）：`ALI_AI_API_KEY`、`ALI_AI_MODEL`（默认 `qwen3.6-plus`）、`ALI_AI_ENDPOINT`
+
+Windows（PowerShell）示例：
+
+```powershell
+$env:DB_PASSWORD="你的数据库密码"
+$env:APP_JWT_SECRET="change-me-change-me-change-me-change-me"
+# 可选：启用阿里模型
+$env:ALI_AI_API_KEY="你的Key"
+$env:ALI_AI_MODEL="qwen3.6-plus"
+mvn -DskipTests spring-boot:run
+```
 
 启动：
 
@@ -123,12 +138,7 @@ npm run build
 
 ### 默认测试账号
 
-| 角色 | 用户名 | 密码 |
-|------|--------|------|
-| 管理员 | admin | admin123 |
-| 员工 | emp01 | employee123 |
-
-种子数据中另有 `emp02`～`emp09`（密码同 **employee123**），详见 `pharmacy_system.sql`。
+开发环境可使用种子数据中的测试账号（用户名/密码以 `src/main/resources/pharmacy_system.sql` 为准）。
 
 ## 项目结构（概要）
 
@@ -137,6 +147,7 @@ pysystem/
 ├── pom.xml
 ├── scripts/
 │   └── reset_pharmacy_db.ps1      # 一键重建库并导入 SQL（慎用）
+├── kb/                            # 本地知识库（Markdown）
 ├── frontend/                      # Vue3 前端工程
 │   ├── src/
 │   │   ├── api/                   # Axios 与各模块接口
@@ -174,6 +185,8 @@ pysystem/
   - `/api/user/**`、`/api/drugs/**`、`/api/category/**`  
   - `/api/sale/**`、`/api/purchase/**`、`/api/kcxx/**`  
   - `/api/statistic/**`、`/api/audit/list`  
+  - `/api/kb/docs`、`/api/kb/search`、`/api/kb/doc`、`/api/kb/resync`（管理员）  
+  - `/api/ai/chat`（药智助手）
 
 ## 数据库表（核心业务 9 张）
 
@@ -182,7 +195,7 @@ pysystem/
 ## 开发说明
 
 - Java 与前端均建议使用 **UTF-8**  
-- 修改 JWT 密钥、数据库密码后勿提交真实凭据到公开仓库  
+- **不要在仓库中写入密钥/密码/API Key**；统一使用环境变量（如 `DB_PASSWORD`、`APP_JWT_SECRET`、`ALI_AI_API_KEY`）  
 - 论文/设计说明见仓库上级目录 `智能药店管理系统的设计.md`（技术栈已与当前实现对齐）  
 
 ## 安全说明（审查摘要）
@@ -210,7 +223,13 @@ pysystem/
 
 ## 更新日志
 
-### v1.1.0（当前）
+### v2.0（开发分支）
+
+- **本地知识库（Markdown）**：新增 `kb/` 目录与 `/api/kb/**`（列表/检索/读取/重建索引）。
+- **药智助手**：新增 `/api/ai/chat`，基于知识库检索结果进行“流程问答”；可选启用阿里模型（OpenAI 兼容接口）用于结构化总结与追问。
+- **体验优化**：助手浮窗全局入口、引用来源与追问建议（可点击）、中文检索更稳、请求/响应强制 UTF-8。
+
+### v1.1.0
 
 - **RBAC**：管理员全量；员工可操作药品/分类/销售/采购/库存等业务接口，**不可**访问 `/api/user/**`、审计日志；Spring Security + 前端路由/侧栏一致。  
 - **登录页**：双栏布局 + 快速选择角色（`expectedPId`）；登录响应携带 `pId`。  

@@ -1,5 +1,10 @@
 server:
   port: ${SERVER_PORT:8080}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
@@ -11,7 +16,8 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/pharmacy_system?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:admin123}
+    # 不在仓库中提供真实/默认密码；请通过环境变量 DB_PASSWORD 配置
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 mybatis:
@@ -27,6 +33,16 @@ management:
 app:
   cors:
     allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*}
+  kb:
+    # 本地知识库目录（Markdown）。支持绝对路径或相对工作目录。
+    # 开发期推荐使用项目根目录下的 kb/；生产可通过环境变量 KB_PATH 指向挂载目录。
+    path: ${KB_PATH:kb}
+  ai:
+    ali:
+      # 阿里 DashScope/百炼 OpenAI 兼容接口（可用环境变量覆盖）
+      endpoint: ${ALI_AI_ENDPOINT:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}
+      api-key: ${ALI_AI_API_KEY:}
+      model: ${ALI_AI_MODEL:qwen3.6-plus}
   security:
     jwt:
       # Replace in production (env var APP_JWT_SECRET). Must be at least 32 chars for HS256.

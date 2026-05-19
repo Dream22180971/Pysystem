@@ -1,5 +1,8 @@
 package com.pharmacy.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 /**
@@ -16,8 +19,9 @@ public class Userinfo {
      */
     private String username;
     /**
-     * 密码（MD5加密）
+     * 密码（MD5加密）；仅请求体写入，不在 JSON 响应中返回
      */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     /**
      * 昵称
@@ -50,6 +54,7 @@ public class Userinfo {
     /**
      * 创建时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date createTime;
 
     public Integer getId() {

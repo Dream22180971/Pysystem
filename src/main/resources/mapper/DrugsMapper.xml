@@ -6,25 +6,25 @@
 <mapper namespace="com.pharmacy.mapper.DrugsMapper">
     <!-- 插入药品信息 -->
     <insert id="insert" parameterType="com.pharmacy.bean.Drugs">
-        INSERT INTO drugs (drugs_name, nums, drugs_image, category_id, price, people, use_method, cid, rid, product_time, save_time, status)
+        INSERT INTO drugs (Drugs_name, Nums, DrugsImage, Category_id, Price, People, Use_method, Cid, Rid, Product_time, Save_time, Status)
         VALUES (#{drugsName}, #{nums}, #{drugsImage}, #{categoryId}, #{price}, #{people}, #{useMethod}, #{cid}, #{rid}, #{productTime}, #{saveTime}, #{status})
     </insert>
 
     <!-- 更新药品信息 -->
     <update id="update" parameterType="com.pharmacy.bean.Drugs">
         UPDATE drugs
-        SET drugs_name = #{drugsName},
-            nums = #{nums},
-            drugs_image = #{drugsImage},
-            category_id = #{categoryId},
-            price = #{price},
-            people = #{people},
-            use_method = #{useMethod},
-            cid = #{cid},
-            rid = #{rid},
-            product_time = #{productTime},
-            save_time = #{saveTime},
-            status = #{status}
+        SET Drugs_name = #{drugsName},
+            Nums = #{nums},
+            DrugsImage = #{drugsImage},
+            Category_id = #{categoryId},
+            Price = #{price},
+            People = #{people},
+            Use_method = #{useMethod},
+            Cid = #{cid},
+            Rid = #{rid},
+            Product_time = #{productTime},
+            Save_time = #{saveTime},
+            Status = #{status}
         WHERE id = #{id}
     </update>
 
@@ -41,6 +41,36 @@
     <!-- 查询所有药品 -->
     <select id="selectAll" resultType="com.pharmacy.bean.Drugs">
         SELECT * FROM drugs
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(1) FROM drugs
+    </select>
+
+    <select id="selectPage" resultType="com.pharmacy.bean.Drugs">
+        SELECT * FROM drugs
+        ORDER BY
+        <choose>
+            <when test="sortField == 'productTime'">
+                Product_time
+            </when>
+            <when test="sortField == 'id'">
+                id
+            </when>
+            <otherwise>
+                id
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        , id
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 根据分类ID查询药品 -->

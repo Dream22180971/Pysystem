@@ -1,0 +1,342 @@
+<script setup lang="ts">
+import type { Component } from 'vue'
+import { computed } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import { menuItems } from '../config/rbac'
+import type { Role } from '../stores/auth'
+import AiAssistantDrawer from '../components/AiAssistantDrawer.vue'
+import {
+  Odometer,
+  User,
+  Goods,
+  PriceTag,
+  TrendCharts,
+  Box,
+  ShoppingCart,
+  PieChart,
+  Document,
+  SwitchButton,
+  ChatDotRound,
+} from '@element-plus/icons-vue'
+
+const router = useRouter()
+const auth = useAuthStore()
+const aiOpen = ref(false)
+
+const iconMap: Record<string, Component> = {
+  '/': Odometer,
+  '/employees': User,
+  '/drugs': Goods,
+  '/categories': PriceTag,
+  '/sales': TrendCharts,
+  '/inventory': Box,
+  '/purchase': ShoppingCart,
+  '/stats': PieChart,
+  '/audit-logs': Document,
+}
+
+const visibleMenu = computed(() => {
+  const r = auth.role
+  if (!r) return [] as typeof menuItems
+  return menuItems.filter((m) => m.roles.includes(r as Role))
+})
+
+const welcomeSuffix = computed(() => {
+  switch (auth.role) {
+    case 'ROLE_ADMIN':
+      return '管理员'
+    case 'ROLE_EMP':
+      return '员工'
+    default:
+      return auth.username ?? '用户'
+  }
+})
+
+async function logout() {
+  auth.clear()
+  await router.replace({ name: 'login' })
+}
+</script>
+
+<template>
+  <el-container class="layout-root" data-testid="app-shell">
+    <el-aside width="var(--aside-width)" class="layout-aside">
+      <div class="aside-inner">
+        <div class="logo-block">
+          <div class="logo-mark" aria-hidden="true">∞</div>
+          <div class="logo-text">
+            <div class="logo-title">智慧药房</div>
+            <div class="logo-sub">智能药店管理系统</div>
+          </div>
+        </div>
+
+        <el-menu
+          router
+          :default-active="$route.path"
+          class="side-menu"
+          data-testid="side-menu"
+          background-color="#001529"
+          text-color="rgba(255,255,255,0.72)"
+          active-text-color="#ffffff"
+        >
+          <el-menu-item
+            v-for="item in visibleMenu"
+            :key="item.path"
+            :index="item.path"
+            :data-testid="`menu-${item.path === '/' ? 'dashboard' : item.path.slice(1)}`"
+          >
+            <el-icon><component :is="iconMap[item.path] ?? Odometer" /></el-icon>
+            <span>{{ item.title }}</span>
+          </el-menu-item>
+        </el-menu>
+
+        <div class="aside-footer">
+          <el-button class="logout-btn" text @click="logout">
+            <el-icon class="logout-ico"><SwitchButton /></el-icon>
+            退出登录
+          </el-button>
+        </div>
+      </div>
+    </el-aside>
+
+    <el-container class="layout-main-wrap">
+      <el-header class="layout-header" height="56px">
+        <span class="header-text">
+          管理后台 <span class="header-sep">|</span> 欢迎回来，{{ welcomeSuffix }}
+        </span>
+      </el-header>
+      <el-main class="layout-main">
+        <RouterView />
+      </el-main>
+    </el-container>
+  </el-container>
+
+  <el-button class="ai-fab" type="primary" circle @click="aiOpen = true" title="药智助手">
+    <el-icon><ChatDotRound /></el-icon>
+  </el-button>
+  <AiAssistantDrawer v-model="aiOpen" />
+</template>
+
+<style scoped>
+.layout-root {
+  min-height: 100vh;
+  --aside-width: 232px;
+}
+
+.layout-aside {
+  background: #001529;
+  color: #fff;
+}
+
+.aside-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 18px;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1890ff, #096dd9);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.logo-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.logo-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.3;
+}
+
+.side-menu {
+  flex: 1;
+  border-right: none !important;
+  overflow-y: auto;
+}
+
+.side-menu :deep(.el-menu-item) {
+  height: 48px;
+  line-height: 48px;
+  margin: 2px 8px;
+  border-radius: 8px;
+}
+
+.side-menu :deep(.el-menu-item.is-active) {
+  background: #1890ff !important;
+  color: #fff !important;
+}
+
+.side-menu :deep(.el-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.side-menu :deep(.el-menu-item.is-active:hover) {
+  background: #1890ff !important;
+}
+
+.aside-footer {
+  flex-shrink: 0;
+  padding: 12px 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logout-btn {
+  width: 100%;
+  justify-content: flex-start;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+}
+
+.logout-btn:hover {
+  color: #fff;
+}
+
+.logout-ico {
+  margin-right: 8px;
+}
+
+.layout-main-wrap {
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.layout-header {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 24px;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.04);
+}
+
+.header-text {
+  font-size: 15px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.header-sep {
+  margin: 0 10px;
+  color: #dcdfe6;
+  font-weight: 400;
+}
+
+.layout-main {
+  padding: 20px 24px 28px;
+  box-sizing: border-box;
+}
+
+.ai-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 22px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 10px 22px rgba(24, 144, 255, 0.28);
+}
+
+@media (max-width: 1100px) {
+  .layout-root {
+    --aside-width: 176px;
+  }
+
+  .logo-block {
+    padding: 16px 12px 14px;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 18px;
+  }
+
+  .logo-title {
+    font-size: 15px;
+  }
+
+  .logo-sub {
+    display: none;
+  }
+
+  .side-menu :deep(.el-menu-item) {
+    margin: 2px 6px;
+    padding: 0 12px !important;
+  }
+
+  .aside-footer {
+    padding: 10px 10px 16px;
+  }
+
+  .layout-header {
+    padding: 0 16px;
+  }
+
+  .layout-main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .layout-root {
+    --aside-width: 72px;
+  }
+
+  .logo-block {
+    justify-content: center;
+    padding: 14px 8px;
+  }
+
+  .logo-text,
+  .side-menu :deep(.el-menu-item span),
+  .logout-btn :deep(span) {
+    display: none;
+  }
+
+  .side-menu :deep(.el-menu-item) {
+    justify-content: center;
+    padding: 0 !important;
+  }
+
+  .logout-btn {
+    justify-content: center;
+  }
+
+  .logout-ico {
+    margin-right: 0;
+  }
+
+  .header-text {
+    font-size: 13px;
+  }
+
+  .layout-main {
+    padding: 12px;
+  }
+}
+</style>

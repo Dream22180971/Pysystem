@@ -35,4 +35,34 @@
     <select id="selectAll" resultType="com.pharmacy.bean.Purchase">
         SELECT * FROM purchase
     </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(1) FROM purchase
+    </select>
+
+    <select id="selectPage" resultType="com.pharmacy.bean.Purchase">
+        SELECT * FROM purchase
+        ORDER BY
+        <choose>
+            <when test="sortField == 'indate'">
+                indate
+            </when>
+            <when test="sortField == 'pid'">
+                pid
+            </when>
+            <otherwise>
+                indate
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        , pid
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 </mapper>

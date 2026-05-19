@@ -1,6 +1,8 @@
 package com.pharmacy.service;
 
 import com.pharmacy.bean.Userinfo;
+import com.pharmacy.vo.PageResult;
+
 import java.util.List;
 
 /**
@@ -56,4 +58,8 @@ public interface UserinfoService {
      * @return 登录是否成功
      */
     boolean login(String username, String password);
+
+    PageResult<Userinfo> getPage(int page, int size);
+
+    PageResult<Userinfo> getPage(int page, int size, String sortField, String sortOrder);
 }

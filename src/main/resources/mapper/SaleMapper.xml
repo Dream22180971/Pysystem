@@ -36,4 +36,34 @@
     <select id="selectAll" resultType="com.pharmacy.bean.Sale">
         SELECT * FROM sale
     </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(1) FROM sale
+    </select>
+
+    <select id="selectPage" resultType="com.pharmacy.bean.Sale">
+        SELECT * FROM sale
+        ORDER BY
+        <choose>
+            <when test="sortField == 'saledate'">
+                saledate
+            </when>
+            <when test="sortField == 'saleId'">
+                sale_id
+            </when>
+            <otherwise>
+                saledate
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        , sale_id
+        <choose>
+            <when test="sortOrder == 'desc'"> DESC</when>
+            <otherwise> ASC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 </mapper>

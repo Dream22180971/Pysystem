@@ -1,87 +1,95 @@
-# 智能药店管理系统 (Pysystem)
+# 智能药店管理系统（Pysystem）
 
-**当前版本：v2.0（开发分支）**：新增本地知识库（Markdown）与“药智助手”（RAG + 可选阿里大模型）。
+> 帮传统药店数字化管理进销存、员工、库存，还能用 AI 回答业务问题。
 
-基于 **Spring Boot 3** 与 **Vue 3** 前后端分离的智能药店后台：员工、药品、分类、采购、销售、库存、统计与日志审计等模块，统一 REST API（`/api`）与 JWT 鉴权；支持 **RBAC**（管理员 / 员工）与分页列表服务端排序。
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green?style=flat)](https://spring.io/projects/spring-boot)
+[![Vue 3](https://img.shields.io/badge/Vue-3-blue?style=flat)](https://vuejs.org)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=flat&logo=docker)](docker-compose.yml)
 
-## 项目简介
+---
 
-系统采用 B/S 架构，支持 **管理员** 与 **员工** 两种业务角色（由 `userinfo.P_id` 与 JWT `role` 声明）；前端为单页应用（Vite），后端为内嵌 Tomcat 的 Spring Boot 应用，数据存储于 MySQL。
-<img width="2560" height="1346" alt="image" src="https://github.com/user-attachments/assets/6f69b593-3bf5-4c12-9ee2-56971acab981" />
+## 目录
 
-<img width="2545" height="1346" alt="image" src="https://github.com/user-attachments/assets/f6140143-70ed-4b24-a348-629ea848526e" />
+- [截图](#截图)
+- [它是什么](#它是什么)
+- [为什么做](#为什么做)
+- [核心功能](#核心功能)
+- [快速开始](#快速开始)
+- [使用示例](#使用示例)
+- [技术架构](#技术架构)
+- [自动化测试](#自动化测试)
+- [Roadmap](#roadmap)
+- [FAQ](#faq)
+- [谁适合看这个](#谁适合看这个)
+- [关于我](#关于我)
 
-<img width="960" height="456" alt="38920c9cae78c222abddc257c72e1df0" src="https://github.com/user-attachments/assets/ac6e6e43-0469-4bba-a808-cb6bab093746" />
-<img width="960" height="456" alt="f1a78bd632f64e8f9f7c375b1be36a71" src="https://github.com/user-attachments/assets/fc552ffb-7940-4bb6-a1e6-58d2fb7624f4" />
+---
 
-## 技术栈
+## 截图
 
-### 后端
+<img width="2560" height="1346" alt="主界面" src="https://github.com/user-attachments/assets/6f69b593-3bf5-4c12-9ee2-56971acab981" />
+<img width="2545" height="1346" alt="药品管理" src="https://github.com/user-attachments/assets/f6140143-70ed-4b24-a348-629ea848526e" />
+<img width="960" height="456" alt="看板" src="https://github.com/user-attachments/assets/ac6e6e43-0469-4bba-a808-cb6bab093746" />
+<img width="960" height="456" alt="统计" src="https://github.com/user-attachments/assets/fc552ffb-7940-4bb6-a1e6-58d2fb7624f4" /> -->
 
-| 技术 | 说明 |
-|------|------|
-| Java | **17** |
-| 框架 | **Spring Boot 3.4.x**（内嵌 Tomcat） |
-| 安全 | **Spring Security 6** + **JWT**（Bearer Token） |
-| 持久层 | **MyBatis** + XML（`src/main/resources/mapper/*.xml`） |
-| 数据库 | **MySQL 8.x** |
-| 构建 | **Maven** |
+---
 
-### 前端（`frontend/`）
+## 它是什么
 
-| 技术 | 说明 |
-|------|------|
-| 框架 | **Vue 3** + **TypeScript** |
-| 构建 | **Vite 8.x** |
-| UI | **Element Plus** + 图标库 |
-| 状态 / 路由 | **Pinia**、**Vue Router 5** |
-| HTTP | **Axios**（请求头携带 JWT；支持从 Pinia / `localStorage` 解析 Token） |
-| 图表 | **ECharts** + **vue-echarts** |
+Pysystem 是一个**药店后台管理系统**，帮药店管理员工、药品、采购、销售、库存，还能用 AI 回答业务操作问题。
 
-### 开发工具（建议）
+**你可以用它来：**
+- 管理员工账号和权限（管理员 / 员工两种角色）
+- 维护药品信息、分类、库存，低库存自动预警
+- 记录采购和销售流水，生成统计图表
+- 用 AI 助手回答"怎么操作系统"这类问题（基于本地知识库 + 可选大模型）
 
-- 后端：IntelliJ IDEA  
-- 前端：VS Code / Cursor  
-- 数据库：MySQL 客户端、Navicat 等  
+Docker 一键启动，不用手动装 MySQL 和 Java 环境。
 
-## 功能模块
+---
 
-| 模块 | 说明 |
-|------|------|
-| 登录 | `POST /api/auth/login`，返回 JWT；可选 `expectedPId` 与账号角色一致校验 |
-| 权限 | Spring Security：用户/审计仅管理员；销售/采购查询与业务写操作限管理员+员工；前端路由与菜单按角色收敛 |
-| 智能看板 | 汇总 SKU、库存预警、本月销售、图表（销售/采购聚合） |
-| 员工管理 | 用户 CRUD（密码 MD5；列表不返回密码字段） |
-| 药品 / 分类 | 药品与分类维护 |
-| 销售 / 采购 | 销售与采购记录 CRUD |
-| 库存 | 库存维护；预警（数量 &lt; 60） |
-| 智能统计 | 销售结构饼图、采购分布柱状图（数据来自 `sale` / `purchase` 表聚合） |
-| 日志审计 | 读 `audit_log` 表（需执行 `audit_log.sql`） |
-| 本地知识库 | 扫描项目 `kb/` 目录下的 Markdown，提供检索/读取接口（`/api/kb/**`） |
-| 药智助手 | 内部流程/系统使用问答：知识库检索 +（可选）阿里模型生成（`/api/ai/chat`） |
+## 为什么做
 
-## 环境要求
+很多中小药店还在用纸质台账或 Excel 管理进销存，效率低、容易出错、查账麻烦。
 
-- **JDK 17**
-- **Maven 3.6+**
-- **MySQL 8.0+**
-- **Node.js 18+**（仅前端开发/构建）
+这个项目的目标是：**给药店一个开箱即用的数字化管理工具**——有看板、有统计、有权限控制、有审计日志，还能用 AI 回答操作问题。
+
+从毕业设计的 SSM + Layui 版本，升级到了 Spring Boot 3 + Vue 3 前后端分离架构，同时加了知识库和 AI 助手模块。
+
+---
+
+## 核心功能
+
+| 你能做什么 | 说明 |
+|-----------|------|
+| **看仪表盘** | 一眼看到 SKU 数量、库存预警、本月销售额、采购趋势 |
+| **管员工** | 创建/编辑/删除员工账号，分配管理员或员工角色 |
+| **管药品** | 药品信息维护、分类管理 |
+| **记采购** | 采购记录录入、查询、统计 |
+| **记销售** | 销售记录录入、查询、统计 |
+| **看库存** | 库存数量维护，低于 60 自动预警 |
+| **看图表** | 销售结构饼图、采购分布柱状图 |
+| **查日志** | 操作审计日志，谁在什么时候做了什么 |
+| **AI 问答** | 药智助手：问它"怎么导出报表"，它从知识库找答案告诉你 |
+
+---
 
 ## 快速开始
 
 ### Docker 一键启动（推荐）
 
-项目已提供 Docker Compose 编排，可一键启动 MySQL、Spring Boot 后端和 Vue 前端，适合本地验收和简历演示。
-
 ```bash
+# 1. 进入项目目录
+cd pysystem
+
+# 2. 一键启动（MySQL + 后端 + 前端）
 docker compose up -d --build
 ```
 
-启动后访问：
-
+启动后打开浏览器：
 - 前端：`http://127.0.0.1:5173`
 - 后端健康检查：`http://127.0.0.1:8080/actuator/health`
-- MySQL：宿主机 `3307` 映射到容器 `3306`
 
 默认测试账号：
 
@@ -90,244 +98,137 @@ docker compose up -d --build
 | 管理员 | `admin` | `admin123` |
 | 员工 | `emp02` | `employee123` |
 
-### 1. 数据库
-
-创建库并导入脚本（在项目根目录 `pysystem` 下，路径按你本机调整）：
+### 手动启动（开发者）
 
 ```bash
+# 1. 导入数据库
 mysql -u root -p --default-character-set=utf8mb4 < src/main/resources/pharmacy_system.sql
 mysql -u root -p --default-character-set=utf8mb4 < src/main/resources/audit_log.sql
-```
 
-Windows 也可使用仓库内脚本（会 **删除并重建** `pharmacy_system` 库，慎用）：
-
-```powershell
-.\scripts\reset_pharmacy_db.ps1
-```
-
-### 2. 后端配置
-
-主要配置见 `src/main/resources/application.yml`：
-
-- 数据源：默认 `jdbc:mysql://localhost:3306/pharmacy_system`，用户 `root`，**密码必须通过环境变量 `DB_PASSWORD` 配置**  
-- JWT：密钥 `APP_JWT_SECRET`（生产环境务必修改，长度满足 HS256 要求）  
-- CORS：`app.cors.allowed-origin-patterns` 默认允许 `http://localhost:*`  
-- 知识库目录：`KB_PATH`（默认 `kb`）  
-- 阿里模型（可选）：`ALI_AI_API_KEY`、`ALI_AI_MODEL`（默认 `qwen3.6-plus`）、`ALI_AI_ENDPOINT`
-
-Windows（PowerShell）示例：
-
-```powershell
+# 2. 启动后端（需要 JDK 17 + Maven）
+cd pysystem
 $env:DB_PASSWORD="你的数据库密码"
 $env:APP_JWT_SECRET="change-me-change-me-change-me-change-me"
-# 可选：启用阿里模型
-$env:ALI_AI_API_KEY="你的Key"
-$env:ALI_AI_MODEL="qwen3.6-plus"
 mvn -DskipTests spring-boot:run
-```
 
-启动：
-
-```bash
-cd pysystem
-mvn -DskipTests spring-boot:run
-```
-
-默认端口：**8080**。健康检查：`GET http://localhost:8080/actuator/health`
-
-打包：
-
-```bash
-mvn -DskipTests clean package
-# 先结束占用 target 下 jar 的 Java 进程，避免 repackage 重命名失败
-java -jar target/pysystem.jar
-```
-
-### 3. 前端
-
-```bash
+# 3. 启动前端（需要 Node.js 18+）
 cd frontend
 npm install
 npm run dev
 ```
 
-默认：**http://localhost:5173**  
-开发环境下 `/api` 由 Vite 代理到 `http://localhost:8080`（见 `frontend/vite.config.ts`）。
+访问 `http://localhost:5173`
 
-生产构建：
+---
 
-```bash
-cd frontend
-npm run build
+## 使用示例
+
+### 场景 1：查看经营数据
+
+登录后直接看仪表盘——SKU 总数、库存预警数量、本月销售额，一目了然。
+
+### 场景 2：录入一笔销售
+
+1. 点击「销售管理」
+2. 新增销售记录，选择药品、数量、金额
+3. 保存后自动更新库存和统计图表
+
+### 场景 3：问 AI 助手
+
+1. 点击右下角「药智助手」浮窗
+2. 输入："怎么添加新员工？"
+3. AI 从本地知识库检索答案，告诉你操作步骤
+
+---
+
+## 技术架构
+
+```
+┌──────────────────────────────────────────┐
+│              Frontend (Vue 3)             │
+│  Vite · Element Plus · ECharts · Pinia  │
+├──────────────────────────────────────────┤
+│         Backend (Spring Boot 3)          │
+│  Spring Security + JWT · MyBatis        │
+│  14 Controllers · AI Chat · KB API      │
+├──────────────────────────────────────────┤
+│           MySQL 8.x                      │
+│  9 张业务表 + audit_log                  │
+├──────────────────────────────────────────┤
+│  Docker Compose: MySQL + Backend + Frontend│
+│  GitHub Actions: Build + Test + Report   │
+└──────────────────────────────────────────┘
 ```
 
-将 `frontend/dist` 交由 Nginx 等托管，并配置反向代理将 `/api` 指到后端地址。
+---
 
-### 默认测试账号
-
-开发环境可使用种子数据中的测试账号（用户名/密码以 `src/main/resources/pharmacy_system.sql` 为准）。
-
-## 自动化测试与 CI/CD
-
-本项目已搭建“可运行、可展示、可讲清楚”的自动化测试体系，覆盖接口鉴权、核心业务只读接口、写入清理 smoke test，以及前端登录和权限路由 E2E。
-
-### 测试技术栈
+## 自动化测试
 
 | 类型 | 技术 | 覆盖内容 |
 |------|------|----------|
-| API 自动化 | `pytest` + `requests` | 健康检查、登录、401/403 鉴权、核心业务接口、写入清理 |
-| 前端 E2E | `Playwright` | 登录页、管理员登录、员工权限、核心页面路由访问 |
-| 环境编排 | `Docker Compose` | MySQL + 后端 + 前端一键启动 |
-| CI/CD | `GitHub Actions` | 后端构建、前端构建、Docker 环境启动、API 测试、E2E 测试、报告上传 |
+| API 测试 | pytest + requests | 健康检查、登录鉴权、核心业务接口 |
+| E2E 测试 | Playwright | 登录页、权限路由、核心页面访问 |
+| CI/CD | GitHub Actions | 自动构建 + Docker 启动 + 全量测试 |
 
-### 本地测试命令
+---
 
-后端构建：
+## Roadmap
 
-```bash
-mvn -DskipTests clean package
-```
+- [x] 前后端分离架构（Spring Boot 3 + Vue 3）
+- [x] JWT 认证 + RBAC 权限控制
+- [x] 进销存全模块（员工/药品/采购/销售/库存）
+- [x] 统计图表（饼图 + 柱状图）
+- [x] Docker 一键启动
+- [x] 本地知识库 + AI 药智助手
+- [x] 操作审计日志
+- [x] GitHub Actions CI/CD
+- [ ] 移动端适配
+- [ ] 多门店支持
+- [ ] 导出 Excel 报表
+- [ ] 接入更多大模型
 
-前端构建：
+---
 
-```bash
-cd frontend
-npm ci
-npm run build
-```
+## FAQ
 
-API 自动化测试：
+**Q: 需要什么环境才能运行？**
+A: 最简单的方式是 Docker，一条命令全搞定。手动启动需要 JDK 17 + Maven + MySQL 8 + Node.js 18。
 
-```bash
-python -m pip install -r requirements.txt
-python -m pytest tests/api -q
-```
+**Q: AI 助手需要联网吗？**
+A: 知识库问答不需要联网（纯本地 Markdown 检索）。如果想用大模型生成更智能的回答，需要配置阿里 DashScope API Key。
 
-Playwright E2E 测试：
+**Q: 密码安全吗？**
+A: 当前版本用 MD5 存储密码，适合学习和演示。生产环境建议迁移到 BCrypt。
 
-```bash
-cd frontend
-npm ci
-npx playwright install --with-deps chromium
-npm run test:e2e
-```
+**Q: 支持多人同时使用吗？**
+A: 支持。通过 RBAC 区分管理员和员工角色，员工只能操作业务模块，不能访问用户管理和审计日志。
 
-如已使用 Docker Compose 启动系统，可指定测试地址：
+**Q: 数据会丢失吗？**
+A: Docker 模式下数据存在容器内，容器删除后数据会丢失。生产环境建议挂载 MySQL 数据卷。
 
-```bash
-cd frontend
-PLAYWRIGHT_SKIP_WEB_SERVER=1 E2E_BASE_URL=http://127.0.0.1:5173 E2E_API_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
-```
+---
 
-Windows PowerShell 示例：
+## 谁适合看这个
 
-```powershell
-cd frontend
-$env:PLAYWRIGHT_SKIP_WEB_SERVER="1"
-$env:E2E_BASE_URL="http://127.0.0.1:5173"
-$env:E2E_API_BASE_URL="http://127.0.0.1:8080"
-npm run test:e2e
-```
+- **计算机专业学生**：毕业设计参考，完整的前后端分离 + CI/CD + AI 集成案例
+- **学 Java 全栈的开发者**：Spring Boot 3 + Vue 3 + MyBatis + JWT + RBAC 的实战项目
+- **想了解 AI 集成的人**：知识库检索 + 大模型调用的轻量级 RAG 实现
+- **药店 / 零售行业从业者**：可以直接拿来用或二次开发
 
-更多测试说明见 [`TESTING.md`](TESTING.md)。
+---
 
-## 项目结构（概要）
+## 关于我
 
-```
-pysystem/
-├── pom.xml
-├── scripts/
-│   └── reset_pharmacy_db.ps1      # 一键重建库并导入 SQL（慎用）
-├── kb/                            # 本地知识库（Markdown）
-├── frontend/                      # Vue3 前端工程
-│   ├── src/
-│   │   ├── api/                   # Axios 与各模块接口
-│   │   ├── config/                # RBAC 路由与菜单角色配置
-│   │   ├── pages/                 # 页面（看板、各业务、登录）
-│   │   ├── layouts/               # 后台布局
-│   │   ├── stores/                # Pinia（登录态）
-│   │   └── router/
-│   ├── vite.config.ts             # 开发代理 /api -> 8080
-│   └── package.json
-└── src/main/
-    ├── java/com/pharmacy/
-    │   ├── PharmacyApplication.java
-    │   ├── bean/                  # 实体
-    │   ├── controller/            # REST，前缀多为 /api/...
-    │   ├── mapper/                # MyBatis 接口
-    │   ├── service/
-    │   ├── security/              # JWT、SecurityConfig、过滤器
-    │   ├── util/
-    │   └── vo/
-    └── resources/
-        ├── application.yml
-        ├── mybatis-config.xml
-        ├── mapper/                # MyBatis XML
-        ├── pharmacy_system.sql    # 建表 + 种子数据
-        └── audit_log.sql          # 审计表 + 演示数据
-```
+我是**肖恩沃尔特**（Sean Walter），一个从测试工程师正在转型为 AI 独立开发者的程序员。
 
-## API 约定
+这个项目从毕业设计起步，逐步升级为一个完整的全栈 + AI 项目。它也是我学习 Spring Boot、Vue 3、Docker 和 RAG 的实战练兵场。
 
-- 统一响应体：`{ "code": 200, "message": "success", "data": ... }`（业务失败时 `code` 非 200）  
-- 除 `POST /api/auth/login` 与放行路径外，请求需头：`Authorization: Bearer <token>`  
-- 主要前缀示例：  
-  - `/api/auth/login`  
-  - `/api/user/**`、`/api/drugs/**`、`/api/category/**`  
-  - `/api/sale/**`、`/api/purchase/**`、`/api/kcxx/**`  
-  - `/api/statistic/**`、`/api/audit/list`  
-  - `/api/kb/docs`、`/api/kb/search`、`/api/kb/doc`、`/api/kb/resync`（管理员）  
-  - `/api/ai/chat`（药智助手）
+- GitHub: [Dream22180971](https://github.com/Dream22180971)
+- Twitter/X: [@sean_walter0717](https://x.com/sean_walter0717)
+- 博客: [seanwalter.top](https://seanwalter.top)
 
-## 数据库表（核心业务 9 张）
+---
 
-`userinfo`、`drugs`、`category`、`part`、`purchase`、`sale`、`kcxx`、`repertory`、`counter`；扩展 **`audit_log`** 用于日志审计。
+## License
 
-## 开发说明
-
-- Java 与前端均建议使用 **UTF-8**  
-- **不要在仓库中写入密钥/密码/API Key**；统一使用环境变量（如 `DB_PASSWORD`、`APP_JWT_SECRET`、`ALI_AI_API_KEY`）  
-- 论文/设计说明见仓库上级目录 `智能药店管理系统的设计.md`（技术栈已与当前实现对齐）  
-
-## 安全说明（审查摘要）
-
-| 项 | 说明 |
-|----|------|
-| 认证 | 无状态 JWT（HS256）；匿名仅 `POST /api/auth/login`（及 OPTIONS 预检、健康检查等），其余需 `Authorization: Bearer` |
-| 授权 | URL 级 RBAC：`ROLE_ADMIN` / `ROLE_EMP`；403 返回统一 JSON |
-| 注入 | MyBatis 使用 `#{}` 参数化；分页排序在 Service 层规范为布尔/白名单字段，避免动态 SQL 拼接用户输入 |
-| CORS | 默认 `http://localhost:*`，生产请改为实际域名并通过环境变量配置 |
-| 密钥 | `APP_JWT_SECRET` 生产环境必须替换；`application.yml` 中示例密钥勿用于线上 |
-| 前端 | Token 存 `localStorage`，需防范 XSS；生产建议 HTTPS + 合理 CSP |
-
-密码当前为 **MD5** 存储（与历史库表一致）；新系统若升级可考虑迁移为 **BCrypt** 等慢哈希。
-
-## 代码与注释审查摘要
-
-- **后端**：Controller / Service / Mapper 分层清晰；关键安全与排序逻辑集中在 `SecurityConfig`、`*ServiceImpl` 与 Mapper XML。  
-- **前端**：列表页统一走服务端分页与 `sortField`/`sortOrder`；路由 `beforeEach` 与 `config/rbac.ts` 避免无权限页面误开。  
-- **注释**：Java 类与 `SecurityConfig`、JWT 相关类保留中文说明；不宜在仓库中保留已失效业务角色（如已移除的扩展角色）的残留文档。  
-
-## 许可证
-
-本项目采用 MIT 许可证（若仓库内无 `LICENSE` 文件，请自行补充）。
-
-## 更新日志
-
-### v2.0（开发分支）
-
-- **本地知识库（Markdown）**：新增 `kb/` 目录与 `/api/kb/**`（列表/检索/读取/重建索引）。
-- **药智助手**：新增 `/api/ai/chat`，基于知识库检索结果进行“流程问答”；可选启用阿里模型（OpenAI 兼容接口）用于结构化总结与追问。
-- **体验优化**：助手浮窗全局入口、引用来源与追问建议（可点击）、中文检索更稳、请求/响应强制 UTF-8。
-
-### v1.1.0
-
-- **RBAC**：管理员全量；员工可操作药品/分类/销售/采购/库存等业务接口，**不可**访问 `/api/user/**`、审计日志；Spring Security + 前端路由/侧栏一致。  
-- **登录页**：双栏布局 + 快速选择角色（`expectedPId`）；登录响应携带 `pId`。  
-- **列表排序**：分类、库存等多处列表支持服务端按 ID/字段排序（`sortField` / `sortOrder`）；分类/库存 Mapper 使用布尔参数控制排序方向，避免 OGNL 字符串比较歧义。  
-- **报表**：销售/采购聚合等（若仓库已包含 `ReportController` / `ReportMapper`）与看板联动。  
-- **其它**：JWT 401/403 JSON 与 UTF-8；员工用户创建时间等历史问题已在前序迭代中修复（以代码为准）。
-
-### v1.0.x / 早期
-
-- **v1.0.0**：早期 SSM + Layui 版本（已迁移，README 以当前栈为准）。
+[MIT](../LICENSE)

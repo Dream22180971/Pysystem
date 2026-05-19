@@ -65,6 +65,27 @@
 
 ## 快速开始
 
+### Docker 一键启动（推荐）
+
+项目已提供 Docker Compose 编排，可一键启动 MySQL、Spring Boot 后端和 Vue 前端，适合本地验收和简历演示。
+
+```bash
+docker compose up -d --build
+```
+
+启动后访问：
+
+- 前端：`http://127.0.0.1:5173`
+- 后端健康检查：`http://127.0.0.1:8080/actuator/health`
+- MySQL：宿主机 `3307` 映射到容器 `3306`
+
+默认测试账号：
+
+| 角色 | 用户名 | 密码 |
+|------|--------|------|
+| 管理员 | `admin` | `admin123` |
+| 员工 | `emp02` | `employee123` |
+
 ### 1. 数据库
 
 创建库并导入脚本（在项目根目录 `pysystem` 下，路径按你本机调整）：
@@ -141,6 +162,70 @@ npm run build
 ### 默认测试账号
 
 开发环境可使用种子数据中的测试账号（用户名/密码以 `src/main/resources/pharmacy_system.sql` 为准）。
+
+## 自动化测试与 CI/CD
+
+本项目已搭建“可运行、可展示、可讲清楚”的自动化测试体系，覆盖接口鉴权、核心业务只读接口、写入清理 smoke test，以及前端登录和权限路由 E2E。
+
+### 测试技术栈
+
+| 类型 | 技术 | 覆盖内容 |
+|------|------|----------|
+| API 自动化 | `pytest` + `requests` | 健康检查、登录、401/403 鉴权、核心业务接口、写入清理 |
+| 前端 E2E | `Playwright` | 登录页、管理员登录、员工权限、核心页面路由访问 |
+| 环境编排 | `Docker Compose` | MySQL + 后端 + 前端一键启动 |
+| CI/CD | `GitHub Actions` | 后端构建、前端构建、Docker 环境启动、API 测试、E2E 测试、报告上传 |
+
+### 本地测试命令
+
+后端构建：
+
+```bash
+mvn -DskipTests clean package
+```
+
+前端构建：
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
+API 自动化测试：
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest tests/api -q
+```
+
+Playwright E2E 测试：
+
+```bash
+cd frontend
+npm ci
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+如已使用 Docker Compose 启动系统，可指定测试地址：
+
+```bash
+cd frontend
+PLAYWRIGHT_SKIP_WEB_SERVER=1 E2E_BASE_URL=http://127.0.0.1:5173 E2E_API_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+```
+
+Windows PowerShell 示例：
+
+```powershell
+cd frontend
+$env:PLAYWRIGHT_SKIP_WEB_SERVER="1"
+$env:E2E_BASE_URL="http://127.0.0.1:5173"
+$env:E2E_API_BASE_URL="http://127.0.0.1:8080"
+npm run test:e2e
+```
+
+更多测试说明见 [`TESTING.md`](TESTING.md)。
 
 ## 项目结构（概要）
 

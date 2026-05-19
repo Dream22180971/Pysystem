@@ -7,6 +7,10 @@
 ## 项目简介
 
 系统采用 B/S 架构，支持 **管理员** 与 **员工** 两种业务角色（由 `userinfo.P_id` 与 JWT `role` 声明）；前端为单页应用（Vite），后端为内嵌 Tomcat 的 Spring Boot 应用，数据存储于 MySQL。
+<img width="2560" height="1346" alt="image" src="https://github.com/user-attachments/assets/6f69b593-3bf5-4c12-9ee2-56971acab981" />
+
+<img width="2545" height="1346" alt="image" src="https://github.com/user-attachments/assets/f6140143-70ed-4b24-a348-629ea848526e" />
+
 <img width="960" height="456" alt="38920c9cae78c222abddc257c72e1df0" src="https://github.com/user-attachments/assets/ac6e6e43-0469-4bba-a808-cb6bab093746" />
 <img width="960" height="456" alt="f1a78bd632f64e8f9f7c375b1be36a71" src="https://github.com/user-attachments/assets/fc552ffb-7940-4bb6-a1e6-58d2fb7624f4" />
 

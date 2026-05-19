@@ -1,0 +1,96 @@
+name: build-and-test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Build backend
+        run: mvn -B -DskipTests clean package
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install API test dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Start Docker test environment
+        run: docker compose up -d --build
+
+      - name: Wait for backend health
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"UP"'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose logs
+          exit 1
+
+      - name: Run API tests
+        env:
+          API_BASE_URL: http://127.0.0.1:8080
+        run: pytest tests/api
+
+      - name: Run Playwright E2E tests
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_SKIP_WEB_SERVER: "1"
+          E2E_BASE_URL: http://127.0.0.1:5173
+          E2E_API_BASE_URL: http://127.0.0.1:8080
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          if-no-files-found: ignore
+
+      - name: Docker logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Docker test environment
+        if: always()
+        run: docker compose down -v

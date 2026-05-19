@@ -61,8 +61,8 @@ async function logout() {
 </script>
 
 <template>
-  <el-container class="layout-root">
-    <el-aside width="232px" class="layout-aside">
+  <el-container class="layout-root" data-testid="app-shell">
+    <el-aside width="var(--aside-width)" class="layout-aside">
       <div class="aside-inner">
         <div class="logo-block">
           <div class="logo-mark" aria-hidden="true">∞</div>
@@ -76,11 +76,17 @@ async function logout() {
           router
           :default-active="$route.path"
           class="side-menu"
+          data-testid="side-menu"
           background-color="#001529"
           text-color="rgba(255,255,255,0.72)"
           active-text-color="#ffffff"
         >
-          <el-menu-item v-for="item in visibleMenu" :key="item.path" :index="item.path">
+          <el-menu-item
+            v-for="item in visibleMenu"
+            :key="item.path"
+            :index="item.path"
+            :data-testid="`menu-${item.path === '/' ? 'dashboard' : item.path.slice(1)}`"
+          >
             <el-icon><component :is="iconMap[item.path] ?? Odometer" /></el-icon>
             <span>{{ item.title }}</span>
           </el-menu-item>
@@ -116,6 +122,7 @@ async function logout() {
 <style scoped>
 .layout-root {
   min-height: 100vh;
+  --aside-width: 232px;
 }
 
 .layout-aside {
@@ -250,5 +257,86 @@ async function logout() {
   height: 46px;
   border-radius: 50%;
   box-shadow: 0 10px 22px rgba(24, 144, 255, 0.28);
+}
+
+@media (max-width: 1100px) {
+  .layout-root {
+    --aside-width: 176px;
+  }
+
+  .logo-block {
+    padding: 16px 12px 14px;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 18px;
+  }
+
+  .logo-title {
+    font-size: 15px;
+  }
+
+  .logo-sub {
+    display: none;
+  }
+
+  .side-menu :deep(.el-menu-item) {
+    margin: 2px 6px;
+    padding: 0 12px !important;
+  }
+
+  .aside-footer {
+    padding: 10px 10px 16px;
+  }
+
+  .layout-header {
+    padding: 0 16px;
+  }
+
+  .layout-main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .layout-root {
+    --aside-width: 72px;
+  }
+
+  .logo-block {
+    justify-content: center;
+    padding: 14px 8px;
+  }
+
+  .logo-text,
+  .side-menu :deep(.el-menu-item span),
+  .logout-btn :deep(span) {
+    display: none;
+  }
+
+  .side-menu :deep(.el-menu-item) {
+    justify-content: center;
+    padding: 0 !important;
+  }
+
+  .logout-btn {
+    justify-content: center;
+  }
+
+  .logout-ico {
+    margin-right: 0;
+  }
+
+  .header-text {
+    font-size: 13px;
+  }
+
+  .layout-main {
+    padding: 12px;
+  }
 }
 </style>

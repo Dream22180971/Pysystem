@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -32,6 +32,7 @@ const statSku = ref(0)
 const statWarn = ref(0)
 const statSales = ref('¥ 0')
 const warnRows = ref<Kcxx[]>([])
+const isCompact = ref(false)
 
 const COLORS = ['#5b8ff9', '#5ad8a6', '#5d7092', '#f6bd16', '#e8684a', '#945fb9', '#ff9845']
 
@@ -81,6 +82,68 @@ const barOption = ref<Record<string, unknown>>({
   ],
 })
 
+function firstSeries(option: Record<string, unknown>) {
+  const series = option.series as Record<string, unknown>[] | undefined
+  return series?.[0]
+}
+
+function applyChartLayout() {
+  const compact = isCompact.value
+  const pieSeries = firstSeries(pieOption.value)
+  if (pieSeries) {
+    pieSeries.radius = compact ? ['28%', '52%'] : ['38%', '68%']
+    pieSeries.center = compact ? ['54%', '42%'] : ['58%', '50%']
+    pieSeries.label = {
+      formatter: compact ? '{b|{b}}\n{d}%' : '{b}\n{d}%',
+      fontSize: compact ? 10 : 11,
+      width: compact ? 72 : 96,
+      overflow: 'truncate',
+      rich: {
+        b: {
+          width: compact ? 72 : 96,
+          overflow: 'truncate',
+        },
+      },
+    }
+    pieSeries.labelLine = {
+      length: compact ? 8 : 14,
+      length2: compact ? 8 : 18,
+    }
+  }
+  pieOption.value = {
+    ...pieOption.value,
+    legend: compact
+      ? {
+          type: 'scroll',
+          orient: 'horizontal',
+          left: 12,
+          right: 12,
+          bottom: 2,
+          textStyle: { fontSize: 11 },
+        }
+      : { orient: 'vertical', left: 'left', top: 'middle', textStyle: { fontSize: 12 } },
+  }
+
+  const grid = barOption.value.grid as Record<string, unknown>
+  grid.bottom = compact ? 72 : '8%'
+  grid.top = compact ? '14%' : '18%'
+  const xAxis = barOption.value.xAxis as Record<string, unknown>
+  xAxis.axisLabel = {
+    fontSize: compact ? 10 : 11,
+    rotate: compact ? 38 : 28,
+    interval: 0,
+    hideOverlap: true,
+    overflow: 'truncate',
+    width: compact ? 72 : 96,
+  }
+  barOption.value = { ...barOption.value }
+}
+
+function syncResponsive() {
+  isCompact.value = window.innerWidth < 1100
+  applyChartLayout()
+}
+
 async function load() {
   loading.value = true
   try {
@@ -119,6 +182,7 @@ async function load() {
     y.max = Math.ceil(maxV / 100) * 100 || 500
     const ser = barOption.value.series as Record<string, unknown>[]
     if (ser[0]) ser[0].data = vals
+    applyChartLayout()
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '看板数据加载失败')
   } finally {
@@ -126,7 +190,15 @@ async function load() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  syncResponsive()
+  window.addEventListener('resize', syncResponsive)
+  load()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncResponsive)
+})
 </script>
 
 <template>
@@ -194,7 +266,7 @@ onMounted(load)
     </el-row>
 
     <el-row :gutter="16" class="chart-row">
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">药品销量比例统计（按销售数量聚合）</span>
@@ -202,7 +274,7 @@ onMounted(load)
           <v-chart class="chart" :option="pieOption" autoresize />
         </el-card>
       </el-col>
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">采购热榜（按采购数量聚合）</span>
@@ -314,12 +386,32 @@ onMounted(load)
 }
 
 .chart {
-  height: 320px;
+  height: 420px;
   width: 100%;
 }
 
 .chart-bar {
-  height: 340px;
+  height: 380px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard {
+    max-width: none;
+  }
+
+  .chart {
+    height: 540px;
+  }
+
+  .chart-bar {
+    height: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .chart {
+    height: 580px;
+  }
 }
 
 .table-empty {

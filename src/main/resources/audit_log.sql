@@ -1,5 +1,9 @@
 -- 审计日志表 + 10 条演示数据（在 pharmacy_system 库中执行）
 USE pharmacy_system;
+SET NAMES utf8mb4;
+SET character_set_client = utf8mb4;
+SET character_set_connection = utf8mb4;
+SET character_set_results = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',

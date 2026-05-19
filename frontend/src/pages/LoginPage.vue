@@ -82,6 +82,7 @@ async function submit() {
             type="button"
             class="role-card"
             :class="{ active: selectedPId === r.pId }"
+            :data-testid="`role-${r.pId}`"
             @click="selectedPId = r.pId"
           >
             <el-icon class="role-ico"><component :is="r.icon" /></el-icon>
@@ -90,7 +91,7 @@ async function submit() {
           </button>
         </div>
 
-        <form class="form" @submit.prevent="submit">
+        <form class="form" data-testid="login-form" @submit.prevent="submit">
           <label class="field">
             <span>用户名</span>
             <el-input v-model="username" autocomplete="username" placeholder="请输入用户名" />

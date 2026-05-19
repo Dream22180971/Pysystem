@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -27,6 +27,7 @@ const loading = ref(true)
 const start = ref<string>('')
 const end = ref<string>('')
 const threshold = ref(10)
+const isCompact = ref(false)
 
 const queryParams = computed(() => {
   const s = start.value?.trim() || undefined
@@ -68,6 +69,78 @@ const purchaseBarOption = ref<Record<string, unknown>>({
 
 const lowStockRows = ref<{ drugsName: string; qty: number }[]>([])
 
+function firstSeries(option: Record<string, unknown>) {
+  const series = option.series as Record<string, unknown>[] | undefined
+  return series?.[0]
+}
+
+function applyPieLayout() {
+  const compact = isCompact.value
+  const pieSeries = firstSeries(saleDrugOption.value)
+  if (pieSeries) {
+    pieSeries.radius = compact ? ['28%', '52%'] : ['35%', '65%']
+    pieSeries.center = compact ? ['54%', '42%'] : ['58%', '50%']
+    pieSeries.label = {
+      formatter: compact ? '{b|{b}}\n{d}%' : '{b}\n{d}%',
+      fontSize: compact ? 10 : 11,
+      width: compact ? 72 : 96,
+      overflow: 'truncate',
+      rich: {
+        b: {
+          width: compact ? 72 : 96,
+          overflow: 'truncate',
+        },
+      },
+    }
+    pieSeries.labelLine = {
+      length: compact ? 8 : 14,
+      length2: compact ? 8 : 18,
+    }
+  }
+  saleDrugOption.value = {
+    ...saleDrugOption.value,
+    legend: compact
+      ? {
+          type: 'scroll',
+          orient: 'horizontal',
+          left: 12,
+          right: 12,
+          bottom: 2,
+          textStyle: { fontSize: 11 },
+        }
+      : { orient: 'vertical', left: 'left', top: 'middle', textStyle: { fontSize: 12 } },
+  }
+}
+
+function applyBarLayout(option: Record<string, unknown>, rotateWide = 24) {
+  const compact = isCompact.value
+  const grid = option.grid as Record<string, unknown>
+  grid.bottom = compact ? 72 : '8%'
+  grid.top = compact ? '14%' : '12%'
+  const xAxis = option.xAxis as Record<string, unknown>
+  xAxis.axisLabel = {
+    rotate: compact ? 38 : rotateWide,
+    interval: 0,
+    hideOverlap: true,
+    overflow: 'truncate',
+    width: compact ? 72 : 96,
+    fontSize: compact ? 10 : 11,
+  }
+}
+
+function applyChartLayout() {
+  applyPieLayout()
+  applyBarLayout(saleTrendOption.value)
+  applyBarLayout(purchaseBarOption.value)
+  saleTrendOption.value = { ...saleTrendOption.value }
+  purchaseBarOption.value = { ...purchaseBarOption.value }
+}
+
+function syncResponsive() {
+  isCompact.value = window.innerWidth < 1100
+  applyChartLayout()
+}
+
 async function load() {
   loading.value = true
   try {
@@ -101,6 +174,7 @@ async function load() {
     if (ser2[0]) ser2[0].data = pQty
 
     lowStockRows.value = lowStock.map((r) => ({ drugsName: r.drugsName, qty: r.qty }))
+    applyChartLayout()
   } catch (e) {
     ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
@@ -108,7 +182,15 @@ async function load() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  syncResponsive()
+  window.addEventListener('resize', syncResponsive)
+  load()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncResponsive)
+})
 </script>
 
 <template>
@@ -143,7 +225,7 @@ onMounted(load)
     </el-card>
 
     <el-row :gutter="16">
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">销售结构（按药品汇总数量）</span>
@@ -151,7 +233,7 @@ onMounted(load)
           <v-chart class="chart" :option="saleDrugOption" autoresize />
         </el-card>
       </el-col>
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">销售趋势（按天汇总销售额）</span>
@@ -162,7 +244,7 @@ onMounted(load)
     </el-row>
 
     <el-row :gutter="16">
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">采购排行（按药品汇总数量）</span>
@@ -170,7 +252,7 @@ onMounted(load)
           <v-chart class="chart" :option="purchaseBarOption" autoresize />
         </el-card>
       </el-col>
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="never" class="panel-card">
           <template #header>
             <span class="panel-title">库存预警（库存 ≤ 阈值）</span>
@@ -190,7 +272,7 @@ onMounted(load)
 
 <style scoped>
 .stats {
-  max-width: 1200px;
+  max-width: 1400px;
 }
 .panel-card {
   border-radius: 10px;
@@ -201,8 +283,24 @@ onMounted(load)
   font-weight: 600;
 }
 .chart {
-  height: 380px;
+  height: 440px;
   width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .stats {
+    max-width: none;
+  }
+
+  .chart {
+    height: 540px;
+  }
+}
+
+@media (max-width: 760px) {
+  .chart {
+    height: 580px;
+  }
 }
 .table-empty {
   padding: 28px 0;

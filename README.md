@@ -30,39 +30,6 @@ docker compose up -d --build
 
 ---
 
-A full-stack pharmacy management system with inventory, sales, staff management and AI assistance. / 一个覆盖进销存、员工、库存和 AI 助手的全栈药店管理系统。
-
-<!-- README-V2-BILINGUAL -->
-
-# Pysystem
-
-> **EN:** A full-stack pharmacy management system with inventory, sales, staff management and AI assistance.  
-> **中文：** 一个覆盖进销存、员工、库存和 AI 助手的全栈药店管理系统。
-
-## Demo / 演示
-
-Existing product screenshots are kept below; a walkthrough GIF/video can be added later. / 现有产品截图保留在下方，后续可补完整演示 GIF/视频。
-
-## Quick Start / 5 分钟快速开始
-
-```bash
-git clone https://github.com/Dream22180971/Pysystem.git
-cd Pysystem
-docker compose up -d --build
-```
-
-> **EN:** The commands above are intentionally kept short: clone, install, run. Project-specific configuration and advanced usage stay in the detailed documentation below.  
-> **中文：** 上面的命令刻意保持最短路径：克隆、安装、运行。项目特定配置与高级用法继续保留在下方详细文档中。
-
-## Why this project / 为什么做这个项目
-
-**EN:** This repository is built around one concrete problem and aims to be understandable, runnable and useful before becoming complex.
-
-**中文：** 这个仓库围绕一个明确问题构建，优先做到易理解、能运行、真正有用，再逐步增加复杂能力。
-
----
-
-<!-- ORIGINAL-DOCS -->
 # 智能药店管理系统（Pysystem）
 
 > 帮传统药店数字化管理进销存、员工、库存，还能用 AI 回答业务问题。
